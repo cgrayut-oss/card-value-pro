@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Card Value Pro - AI Card Recognition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2a1f3a 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #ffffff;
+            padding: 1rem;
+            overflow-x: hidden;
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 2rem 0;
+            position: relative;
+        }
+
+        .settings-button {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: rgba(96, 239, 255, 0.1);
+            border: 1px solid rgba(96, 239, 255, 0.3);
+            border-radius: 8px;
+            color: #60efff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .settings-button:hover {
+            background: rgba(96, 239, 255, 0.2);
+            border-color: #60efff;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60efff 0%, #0061ff 50%, #ff00e5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.03em;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #a0aec0;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid #fbbf24;
+            border-radius: 20px;
+            color: #fcd34d;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .sandbox-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-top: 0.85rem;
+        }
+
+        .sandbox-label {
+            color: #a0aec0;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .sandbox-label.active {
+            color: #60efff;
+        }
+
+        .toggle-track {
+            width: 48px;
+            height: 26px;
+            background: rgba(96, 239, 255, 0.25);
+            border: 1px solid rgba(96, 239, 255, 0.4);
+            border-radius: 13px;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-track.sandbox-active {
+            background: rgba(251, 191, 36, 0.25);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .toggle-thumb {
+            width: 20px;
+            height: 20px;
+            background: #60efff;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s ease, background 0.3s ease;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        .toggle-thumb.sandbox-active {
+            left: 26px;
+            background: #fbbf24;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .photo-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .photo-section h3 {
+            color: #60efff;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .photo-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .photo-wrapper {
+            aspect-ratio: 3/4;
+        }
+
+        .camera-button {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(96, 239, 255, 0.3);
+            border-radius: 12px;
+            color: #60efff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .camera-button:active {
+            background: rgba(96, 239, 255, 0.1);
+            border-color: #60efff;
+        }
+
+        .photo-preview {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #60efff;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-photo {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(239, 68, 68, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .photo-label {
+            position: absolute;
+            bottom: 0.5rem;
+            left: 0.5rem;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .ai-analyze-button {
+            width: 100%;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #60efff 0%, #0061ff 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(96, 239, 255, 0.4);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 10px 30px rgba(96, 239, 255, 0.4); }
+            50% { box-shadow: 0 10px 40px rgba(96, 239, 255, 0.6); }
+        }
+
+        .ai-analyze-button:active {
+            transform: scale(0.98);
+        }
+
+        .ai-analyze-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            animation: none;
+        }
+
+        .card-identification {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+        }
+
+        .card-identification h4 {
+            color: #10b981;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .identification-details {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .id-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+        }
+
+        .id-label {
+            color: #a0aec0;
+            font-size: 0.875rem;
+        }
+
+        .id-value {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 2rem 0;
+            color: #718096;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(96, 239, 255, 0.2);
+        }
+
+        .divider span {
+            padding: 0 1rem;
+        }
+
+        .input-group {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #60efff;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(96, 239, 255, 0.2);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #60efff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        input::placeholder {
+            color: #718096;
+        }
+
+        .search-button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #60efff 0%, #0061ff 100%);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(96, 239, 255, 0.3);
+        }
+
+        .search-button:active {
+            transform: scale(0.98);
+        }
+
+        .search-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message,
+        .info-message {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .info-message {
+            background: rgba(96, 239, 255, 0.1);
+            border: 1px solid rgba(96, 239, 255, 0.3);
+            color: #60efff;
+        }
+
+        /* Sold Listings Section */
+        .listings-section {
+            margin-top: 1.5rem;
+        }
+
+        .listings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .listings-header h3 {
+            color: #60efff;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .listings-count {
+            color: #718096;
+            font-size: 0.85rem;
+        }
+
+        .listings-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .listing-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(96, 239, 255, 0.15);
+            border-radius: 10px;
+            padding: 0.75rem;
+            transition: background 0.2s ease;
+            display: flex;
+            gap: 0.85rem;
+            align-items: center;
+        }
+
+        .listing-item:hover {
+            background: rgba(96, 239, 255, 0.08);
+            border-color: rgba(96, 239, 255, 0.35);
+        }
+
+        .listing-image-wrap {
+            flex-shrink: 0;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(96, 239, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .listing-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .listing-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #4a5568;
+        }
+
+        .listing-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .listing-title {
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .listing-details {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .listing-price {
+            color: #60efff;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .listing-condition {
+            color: #a0aec0;
+            font-size: 0.82rem;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+        }
+
+        .listing-date {
+            color: #718096;
+            font-size: 0.82rem;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(96, 239, 255, 0.2);
+            border-top-color: #60efff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .recommendation-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .recommendation-badge.buy {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+            border: 2px solid #10b981;
+            color: #6ee7b7;
+        }
+
+        .recommendation-badge.consider {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
+            border: 2px solid #fbbf24;
+            color: #fcd34d;
+        }
+
+        .recommendation-badge.pass {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+            border: 2px solid #ef4444;
+            color: #fca5a5;
+        }
+
+        .metrics-grid {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(96, 239, 255, 0.2);
+            border-radius: 16px;
+        }
+
+        .metric-card.primary {
+            background: linear-gradient(135deg, rgba(96, 239, 255, 0.1) 0%, rgba(0, 97, 255, 0.1) 100%);
+            border: 2px solid #60efff;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: #a0aec0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0.5rem 0;
+        }
+
+        .metric-value.positive {
+            color: #6ee7b7;
+        }
+
+        .metric-value.negative {
+            color: #fca5a5;
+        }
+
+        .metric-detail {
+            font-size: 0.875rem;
+            color: #718096;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .settings-modal-content {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2a1f3a 100%);
+            border: 2px solid rgba(96, 239, 255, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-header h2 {
+            color: #60efff;
+            font-size: 1.75rem;
+        }
+
+        .settings-body {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .settings-section h3 {
+            color: #60efff;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .setting-item label {
+            color: #cbd5e0;
+            font-size: 0.95rem;
+        }
+
+        .setting-item input {
+            width: 120px;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(96, 239, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .setting-item input:focus {
+            outline: none;
+            border-color: #60efff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .reset-button,
+        .save-button {
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .reset-button {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .reset-button:active {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .save-button {
+            background: linear-gradient(135deg, #60efff 0%, #0061ff 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(96, 239, 255, 0.3);
+            flex: 1;
+        }
+
+        .save-button:active {
+            transform: scale(0.98);
+        }
+
+        .camera-content {
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .camera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #1a1f3a 0%, #2a1f3a 100%);
+            border-bottom: 2px solid #60efff;
+        }
+
+        .camera-header h3 {
+            color: #60efff;
+            font-size: 1rem;
+        }
+
+        .close-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 1.2rem;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-video {
+            width: 100%;
+            display: block;
+        }
+
+        .camera-controls {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #1a1f3a 0%, #2a1f3a 100%);
+            display: flex;
+            justify-content: center;
+        }
+
+        .capture-button {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #60efff 0%, #0061ff 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(96, 239, 255, 0.4);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .title {
+                font-size: 4rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-section">
+        <button class="settings-button" onclick="openSettings()">
+            ⚙️ Cost Settings
+        </button>
+        <h1 class="title">Card Value Pro</h1>
+        <p class="subtitle">AI-powered card identification & market analysis</p>
+        <div class="demo-badge" id="apiBadge">eBay Production Mode - Real Market Data Active! 🚀</div>
+        <div class="sandbox-toggle">
+            <span class="sandbox-label" id="sandboxLabel">Production</span>
+            <div class="toggle-track" id="sandboxToggle" onclick="toggleSandbox()">
+                <div class="toggle-thumb" id="sandboxThumb"></div>
+            </div>
+            <span class="sandbox-label" id="sandboxLabelRight">Sandbox</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="photo-section">
+            <h3>
+                <span>✨</span> AI Card Recognition
+            </h3>
+            <div class="photo-buttons">
+                <div class="photo-wrapper">
+                    <div id="frontPhotoPreview" class="hidden">
+                        <div class="photo-preview">
+                            <img id="frontPhotoImg" src="" alt="Card Front">
+                            <button class="remove-photo" onclick="removePhoto('front')">×</button>
+                            <span class="photo-label">Front</span>
+                        </div>
+                    </div>
+                    <button id="frontCameraButton" class="camera-button" onclick="startCamera('front')">
+                        <span style="font-size: 2rem;">📷</span>
+                        <span>Take Front Photo</span>
+                    </button>
+                </div>
+                
+                <div class="photo-wrapper">
+                    <div id="backPhotoPreview" class="hidden">
+                        <div class="photo-preview">
+                            <img id="backPhotoImg" src="" alt="Card Back">
+                            <button class="remove-photo" onclick="removePhoto('back')">×</button>
+                            <span class="photo-label">Back</span>
+                        </div>
+                    </div>
+                    <button id="backCameraButton" class="camera-button" onclick="startCamera('back')">
+                        <span style="font-size: 2rem;">📷</span>
+                        <span>Take Back Photo</span>
+                    </button>
+                </div>
+            </div>
+
+            <button id="aiAnalyzeButton" class="ai-analyze-button hidden" onclick="analyzeAndSearch()">
+                <span>👁</span>
+                <span>AI Identify & Search Card</span>
+            </button>
+
+            <div id="cardIdentification" class="card-identification hidden">
+                <h4>
+                    <span>✓</span> Card Identified
+                </h4>
+                <div id="identificationDetails" class="identification-details"></div>
+            </div>
+        </div>
+
+        <div class="divider">
+            <span>OR ENTER MANUALLY</span>
+        </div>
+
+        <div class="input-group">
+            <div class="input-wrapper">
+                <span class="input-icon">🔍</span>
+                <input type="text" id="cardQuery" placeholder="Enter card name (e.g., 2023 Panini Prizm Ja Morant PSA 10)">
+            </div>
+            
+            <div class="input-wrapper">
+                <span class="input-icon">💲</span>
+                <input type="number" id="sellerPrice" placeholder="Seller's asking price">
+            </div>
+            
+            <button class="search-button" onclick="handleSearch()">Analyze Deal</button>
+        </div>
+
+        <div id="errorMessage" class="error-message hidden"></div>
+        <div id="loadingState" class="loading-state hidden">
+            <div class="spinner"></div>
+            <p>Analyzing card with AI...</p>
+        </div>
+        <div id="resultsSection" class="results-section hidden"></div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal-overlay">
+        <div class="settings-modal-content">
+            <div class="modal-header">
+                <h2>Cost Settings</h2>
+                <button class="close-button" onclick="closeSettings()">×</button>
+            </div>
+            
+            <div class="settings-body">
+                <div class="settings-section">
+                    <h3>Selling Fees</h3>
+                    <div class="setting-item">
+                        <label>Seller Fee %</label>
+                        <input type="number" step="0.01" id="ebayFeePercent" value="13.25">
+                    </div>
+                    <div class="setting-item">
+                        <label>Processor Fee %</label>
+                        <input type="number" step="0.01" id="paymentFeePercent" value="3.00">
+                    </div>
+                    <div class="setting-item">
+                        <label>Processor Fee Charge $</label>
+                        <input type="number" step="0.01" id="processorFeeCharge" value="0.30">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Supply & Other Costs ($)</h3>
+                    <div class="setting-item">
+                        <label>Supply Cost 1</label>
+                        <input type="number" step="0.01" id="supplyCost1" value="0.50">
+                    </div>
+                    <div class="setting-item">
+                        <label>Supply Cost 2</label>
+                        <input type="number" step="0.01" id="supplyCost2" value="0.05">
+                    </div>
+                    <div class="setting-item">
+                        <label>Supply Cost 3</label>
+                        <input type="number" step="0.01" id="supplyCost3" value="0.15">
+                    </div>
+                    <div class="setting-item">
+                        <label>Shipping Cost</label>
+                        <input type="number" step="0.01" id="shipping" value="5.00">
+                    </div>
+                    <div class="setting-item">
+                        <label>Additional Costs</label>
+                        <input type="number" step="0.01" id="additionalCosts" value="0.00">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="reset-button" onclick="resetSettings()">Reset to Defaults</button>
+                <button class="save-button" onclick="saveSettings()">💾 Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Modal -->
+    <div id="cameraModal" class="modal-overlay">
+        <div class="camera-content">
+            <div class="camera-header">
+                <h3 id="cameraTitle">Take Photo</h3>
+                <button class="close-button" onclick="stopCamera()">×</button>
+            </div>
+            <video id="cameraVideo" autoplay playsinline class="camera-video"></video>
+            <canvas id="canvas" class="hidden"></canvas>
+            <div class="camera-controls">
+                <button class="capture-button" onclick="capturePhoto()">
+                    <span>📷</span>
+                    <span>Capture Photo</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cardPhotos = { front: null, back: null };
+        let currentPhotoSide = null;
+        let stream = null;
+        let cardIdentification = null;
+
+        // Configuration
+        const USE_REAL_EBAY_API = true; // Set to true to use real eBay data
+        let USE_SANDBOX = false; // Can be toggled in UI
+
+        const costSettings = {
+            ebayFeePercent: 13.25,
+            paymentFeePercent: 3.0,
+            processorFeeCharge: 0.30,
+            supplyCost1: 0.50,
+            supplyCost2: 0.05,
+            supplyCost3: 0.15,
+            shipping: 5.00,
+            additionalCosts: 0.00
+        };
+
+        function updatePhotoButtons() {
+            const hasPhotos = cardPhotos.front || cardPhotos.back;
+            const aiButton = document.getElementById('aiAnalyzeButton');
+            const sellerPrice = document.getElementById('sellerPrice').value;
+            
+            if (hasPhotos) {
+                aiButton.classList.remove('hidden');
+                aiButton.disabled = !sellerPrice;
+            } else {
+                aiButton.classList.add('hidden');
+            }
+        }
+
+        function toggleSandbox() {
+            USE_SANDBOX = !USE_SANDBOX;
+            
+            const track = document.getElementById('sandboxToggle');
+            const thumb = document.getElementById('sandboxThumb');
+            const badge = document.getElementById('apiBadge');
+            const leftLabel = document.getElementById('sandboxLabel');
+            const rightLabel = document.getElementById('sandboxLabelRight');
+            
+            if (USE_SANDBOX) {
+                track.classList.add('sandbox-active');
+                thumb.classList.add('sandbox-active');
+                badge.textContent = '⚠️ Sandbox Mode - Test Data Only';
+                badge.style.background = 'rgba(251, 191, 36, 0.2)';
+                badge.style.borderColor = '#fbbf24';
+                badge.style.color = '#fcd34d';
+                leftLabel.classList.remove('active');
+                rightLabel.classList.add('active');
+            } else {
+                track.classList.remove('sandbox-active');
+                thumb.classList.remove('sandbox-active');
+                badge.textContent = 'eBay Production Mode - Real Market Data Active! 🚀';
+                badge.style.background = 'rgba(96, 239, 255, 0.15)';
+                badge.style.borderColor = '#60efff';
+                badge.style.color = '#60efff';
+                leftLabel.classList.add('active');
+                rightLabel.classList.remove('active');
+            }
+        }
+
+        function openSettings() {
+            // Load current settings into form
+            document.getElementById('ebayFeePercent').value = costSettings.ebayFeePercent;
+            document.getElementById('paymentFeePercent').value = costSettings.paymentFeePercent;
+            document.getElementById('processorFeeCharge').value = costSettings.processorFeeCharge;
+            document.getElementById('supplyCost1').value = costSettings.supplyCost1;
+            document.getElementById('supplyCost2').value = costSettings.supplyCost2;
+            document.getElementById('supplyCost3').value = costSettings.supplyCost3;
+            document.getElementById('shipping').value = costSettings.shipping;
+            document.getElementById('additionalCosts').value = costSettings.additionalCosts;
+            
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function saveSettings() {
+            // Update costSettings from form
+            costSettings.ebayFeePercent = parseFloat(document.getElementById('ebayFeePercent').value) || 13.25;
+            costSettings.paymentFeePercent = parseFloat(document.getElementById('paymentFeePercent').value) || 3.0;
+            costSettings.processorFeeCharge = parseFloat(document.getElementById('processorFeeCharge').value) || 0.30;
+            costSettings.supplyCost1 = parseFloat(document.getElementById('supplyCost1').value) || 0;
+            costSettings.supplyCost2 = parseFloat(document.getElementById('supplyCost2').value) || 0;
+            costSettings.supplyCost3 = parseFloat(document.getElementById('supplyCost3').value) || 0;
+            costSettings.shipping = parseFloat(document.getElementById('shipping').value) || 0;
+            costSettings.additionalCosts = parseFloat(document.getElementById('additionalCosts').value) || 0;
+            
+            // Save to localStorage
+            localStorage.setItem('cardAppCostSettings', JSON.stringify(costSettings));
+            
+            closeSettings();
+            
+            // Show success message briefly
+            const badge = document.getElementById('apiBadge');
+            const originalText = badge.textContent;
+            badge.textContent = '✓ Settings Saved!';
+            badge.style.background = 'rgba(16, 185, 129, 0.3)';
+            badge.style.borderColor = '#10b981';
+            
+            setTimeout(() => {
+                badge.textContent = originalText;
+                badge.style.background = '';
+                badge.style.borderColor = '';
+            }, 2000);
+        }
+
+        function resetSettings() {
+            if (confirm('Reset all cost settings to defaults?')) {
+                document.getElementById('ebayFeePercent').value = 13.25;
+                document.getElementById('paymentFeePercent').value = 3.00;
+                document.getElementById('processorFeeCharge').value = 0.30;
+                document.getElementById('supplyCost1').value = 0.50;
+                document.getElementById('supplyCost2').value = 0.05;
+                document.getElementById('supplyCost3').value = 0.15;
+                document.getElementById('shipping').value = 5.00;
+                document.getElementById('additionalCosts').value = 0.00;
+            }
+        }
+
+        async function startCamera(side) {
+            currentPhotoSide = side;
+            const modal = document.getElementById('cameraModal');
+            const video = document.getElementById('cameraVideo');
+            const title = document.getElementById('cameraTitle');
+            
+            title.textContent = `Take Photo - ${side === 'front' ? 'Front' : 'Back'} of Card`;
+            modal.classList.add('active');
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                showError('Unable to access camera. Please check permissions.');
+                stopCamera();
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const photoData = canvas.toDataURL('image/jpeg', 0.9);
+            cardPhotos[currentPhotoSide] = photoData;
+
+            // Update UI
+            const preview = document.getElementById(`${currentPhotoSide}PhotoPreview`);
+            const button = document.getElementById(`${currentPhotoSide}CameraButton`);
+            const img = document.getElementById(`${currentPhotoSide}PhotoImg`);
+            
+            img.src = photoData;
+            preview.classList.remove('hidden');
+            button.classList.add('hidden');
+
+            updatePhotoButtons();
+            stopCamera();
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            document.getElementById('cameraModal').classList.remove('active');
+            currentPhotoSide = null;
+        }
+
+        function removePhoto(side) {
+            cardPhotos[side] = null;
+            document.getElementById(`${side}PhotoPreview`).classList.add('hidden');
+            document.getElementById(`${side}CameraButton`).classList.remove('hidden');
+            
+            // Clear identification if photos are removed
+            if (side === 'front' || (side === 'back' && !cardPhotos.front)) {
+                cardIdentification = null;
+                document.getElementById('cardIdentification').classList.add('hidden');
+                document.getElementById('cardQuery').value = '';
+            }
+            
+            updatePhotoButtons();
+        }
+
+        async function identifyCardFromImage(imageData) {
+            try {
+                const response = await fetch("https://api.anthropic.com/v1/messages", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        model: "claude-sonnet-4-20250514",
+                        max_tokens: 1000,
+                        messages: [
+                            {
+                                role: "user",
+                                content: [
+                                    {
+                                        type: "image",
+                                        source: {
+                                            type: "base64",
+                                            media_type: "image/jpeg",
+                                            data: imageData.split(',')[1]
+                                        }
+                                    },
+                                    {
+                                        type: "text",
+                                        text: `Analyze this card image and extract the following information.
+
+This could be a SPORTS CARD or a POKÉMON CARD. Identify which type it is and extract the appropriate information:
+
+FOR SPORTS CARDS:
+- Player Name
+- Year
+- Brand/Manufacturer (e.g., Panini, Topps, Upper Deck)
+- Set Name (e.g., Prizm, Chrome, Select)
+- Card Number (if visible)
+- Parallel/Variation (e.g., Silver, Base, Gold)
+- Grade/Condition (if graded - PSA, BGS, SGC)
+- Sport (Basketball, Football, Baseball, etc.)
+
+FOR POKÉMON CARDS:
+- Pokémon Name (e.g., Charizard, Pikachu, Mewtwo)
+- Year
+- Brand (Pokemon, Pokémon Company, Wizards of the Coast)
+- Set Name (e.g., Base Set, Evolving Skies, Scarlet & Violet)
+- Card Number (if visible, often at bottom like 4/102)
+- Card Type/Rarity (e.g., Holo, Full Art, Secret Rare, Rainbow Rare, VMAX, GX)
+- Grade/Condition (if graded - PSA, BGS, CGC)
+- Card Type (Pokemon)
+
+Respond ONLY with a JSON object in this exact format:
+
+FOR SPORTS CARDS:
+{
+  "player": "Player Name",
+  "year": "2023",
+  "brand": "Panini",
+  "set": "Prizm",
+  "cardNumber": "123",
+  "parallel": "Silver",
+  "grade": "PSA 10",
+  "sport": "Basketball",
+  "searchQuery": "2023 Panini Prizm Player Name Silver PSA 10",
+  "confidence": "high"
+}
+
+FOR POKÉMON CARDS:
+{
+  "player": "Charizard",
+  "year": "2023",
+  "brand": "Pokemon",
+  "set": "Obsidian Flames",
+  "cardNumber": "125/197",
+  "parallel": "Full Art",
+  "grade": "PSA 10",
+  "sport": "Pokemon",
+  "searchQuery": "Pokemon Charizard Obsidian Flames Full Art PSA 10",
+  "confidence": "high"
+}
+
+If you cannot identify all fields, use "Unknown" for missing values. The searchQuery should be optimized for eBay search.`
+                                    }
+                                ]
+                            }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to analyze card image');
+                }
+
+                const data = await response.json();
+                const textContent = data.content.find(block => block.type === 'text')?.text || '';
+                
+                const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error('Could not parse card information from image');
+                }
+                
+                return JSON.parse(jsonMatch[0]);
+                
+            } catch (err) {
+                console.error('Card identification error:', err);
+                throw new Error('Failed to identify card from image. Please enter details manually or try a clearer photo.');
+            }
+        }
+
+        async function analyzeAndSearch() {
+            const sellerPrice = document.getElementById('sellerPrice').value;
+            
+            if (!cardPhotos.front && !cardPhotos.back) {
+                showError('Please take at least one photo of the card first');
+                return;
+            }
+
+            if (!sellerPrice) {
+                showError('Please enter the seller price');
+                return;
+            }
+
+            hideError();
+            showLoading();
+
+            try {
+                const photoToAnalyze = cardPhotos.front || cardPhotos.back;
+                cardIdentification = await identifyCardFromImage(photoToAnalyze);
+                
+                // Display identification
+                displayCardIdentification(cardIdentification);
+                
+                // Set the search query
+                document.getElementById('cardQuery').value = cardIdentification.searchQuery;
+                
+                // Automatically search
+                await performSearch(cardIdentification.searchQuery, sellerPrice);
+                
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function displayCardIdentification(info) {
+            const container = document.getElementById('identificationDetails');
+            container.innerHTML = '';
+            
+            const fields = [
+                { label: 'Player', value: info.player },
+                { label: 'Year', value: info.year },
+                { label: 'Brand', value: info.brand },
+                { label: 'Set', value: info.set },
+                { label: 'Parallel', value: info.parallel },
+                { label: 'Grade', value: info.grade }
+            ];
+            
+            fields.forEach(field => {
+                if (field.value !== 'Unknown') {
+                    const item = document.createElement('div');
+                    item.className = 'id-item';
+                    item.innerHTML = `
+                        <span class="id-label">${field.label}:</span>
+                        <span class="id-value">${field.value}</span>
+                    `;
+                    container.appendChild(item);
+                }
+            });
+            
+            document.getElementById('cardIdentification').classList.remove('hidden');
+        }
+
+        async function handleSearch() {
+            const cardQuery = document.getElementById('cardQuery').value;
+            const sellerPrice = document.getElementById('sellerPrice').value;
+            
+            if (!cardQuery || !sellerPrice) {
+                showError('Please enter both card name and seller price');
+                return;
+            }
+            
+            hideError();
+            showLoading();
+            
+            try {
+                await performSearch(cardQuery, sellerPrice);
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function fetchEbaySoldItems(keywords) {
+            try {
+                // Your Cloudflare Worker URL
+                const WORKER_URL = 'https://ebay-proxy.cgrayut.workers.dev';
+                
+                // Call your Cloudflare Worker instead of eBay directly
+                const url = `${WORKER_URL}?keywords=${encodeURIComponent(keywords)}&sandbox=${USE_SANDBOX}`;
+
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`Worker API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Check for errors from the worker
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                const searchResult = data.findCompletedItemsResponse?.[0]?.searchResult?.[0];
+                
+                if (!searchResult || searchResult['@count'] === '0') {
+                    return null;
+                }
+
+                const items = searchResult.item || [];
+                
+                const salesData = items
+                    .filter(item => {
+                        return item.sellingStatus?.[0]?.sellingState?.[0] === 'EndedWithSales';
+                    })
+                    .map(item => {
+                        const price = parseFloat(item.sellingStatus[0].currentPrice[0].__value__);
+                        const endTime = item.listingInfo[0].endTime[0];
+                        const condition = item.condition?.[0]?.conditionDisplayName?.[0] || 'Unknown';
+                        const title = item.title[0];
+                        const imageURL = item.galleryURL?.[0] || item.pictureURL?.[0] || '';
+                        
+                        const date = new Date(endTime).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        });
+                        
+                        return { price, date, condition, title, imageURL };
+                    })
+                    .filter(item => item.price > 0);
+
+                return salesData;
+
+            } catch (error) {
+                console.error('eBay API Error:', error);
+                throw error;
+            }
+        }
+
+        async function performSearch(query, price) {
+            let salesData;
+            
+            if (USE_REAL_EBAY_API) {
+                try {
+                    // Step 1: Exact search
+                    const ebayResults = await fetchEbaySoldItems(query);
+                    
+                    // If we found ANY results for the exact card, use them
+                    if (ebayResults && ebayResults.length > 0) {
+                        salesData = {
+                            cardName: query,
+                            recentSales: ebayResults.slice(0, 10),
+                            searchType: 'Exact Match'
+                        };
+                    } else {
+                        // Step 2: NO exact results found, try Priority 1 fallback
+                        const cardParts = parseCardQuery(query);
+                        const fallbackSearch1 = buildFallbackSearch(cardParts, 1);
+                        
+                        if (fallbackSearch1) {
+                            const results1 = await fetchEbaySoldItems(fallbackSearch1.query);
+                            
+                            if (results1 && results1.length > 0) {
+                                salesData = {
+                                    cardName: query,
+                                    recentSales: results1.slice(0, 10),
+                                    searchType: fallbackSearch1.type,
+                                    comparableQuery: fallbackSearch1.query
+                                };
+                            } else {
+                                // Step 3: Priority 1 failed, try Priority 2 fallback
+                                const fallbackSearch2 = buildFallbackSearch(cardParts, 2);
+                                
+                                if (fallbackSearch2) {
+                                    const results2 = await fetchEbaySoldItems(fallbackSearch2.query);
+                                    
+                                    if (results2 && results2.length > 0) {
+                                        salesData = {
+                                            cardName: query,
+                                            recentSales: results2.slice(0, 10),
+                                            searchType: fallbackSearch2.type,
+                                            comparableQuery: fallbackSearch2.query
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // If still no results, use mock data
+                        if (!salesData) {
+                            throw new Error('No sales data found for exact card or comparable cards');
+                        }
+                    }
+                } catch (err) {
+                    showError(err.message + ' - Using mock data instead');
+                    salesData = generateMockData(query);
+                }
+            } else {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                salesData = generateMockData(query);
+            }
+            
+            const metrics = calculateMetrics(salesData, price);
+            displayResults(salesData, metrics);
+        }
+
+        /**
+         * Parse card query into components
+         */
+        function parseCardQuery(query) {
+            const parts = {
+                year: query.match(/\b(19|20)\d{2}\b/)?.[0] || '',
+                brand: extractBrand(query),
+                set: extractSet(query),
+                player: extractPlayer(query),
+                grade: query.match(/(PSA|BGS|SGC)\s*\d+/i)?.[0] || '',
+                parallel: extractParallel(query),
+                sport: extractSport(query)
+            };
+            return parts;
+        }
+
+        /**
+         * Extract brand from query
+         */
+        function extractBrand(query) {
+            const brands = [
+                // Sports card brands
+                'Panini', 'Topps', 'Upper Deck', 'Bowman', 'Donruss', 'Fleer', 'Select', 'Score', 'Leaf', 'SP Authentic',
+                // Pokémon brands
+                'Pokemon', 'Pokémon', 'PTCG', 'Wizards of the Coast', 'WotC'
+            ];
+            for (const brand of brands) {
+                if (query.toLowerCase().includes(brand.toLowerCase())) {
+                    return brand;
+                }
+            }
+            return '';
+        }
+
+        /**
+         * Extract set name from query
+         */
+        function extractSet(query) {
+            const sets = [
+                // Sports card sets
+                'Prizm', 'Chrome', 'Optic', 'Mosaic', 'Select', 'Contenders', 'Certified', 'Crown Royale', 'National Treasures', 'Immaculate',
+                // Pokémon sets
+                'Base Set', 'Jungle', 'Fossil', 'Team Rocket', 'Gym Heroes', 'Gym Challenge',
+                'Neo Genesis', 'Neo Discovery', 'Neo Revelation', 'Neo Destiny',
+                'Legendary Collection', 'Expedition', 'Aquapolis', 'Skyridge',
+                'EX Ruby & Sapphire', 'EX FireRed & LeafGreen', 'EX Emerald',
+                'Diamond & Pearl', 'Platinum', 'HeartGold & SoulSilver',
+                'Black & White', 'XY', 'Sun & Moon', 'Sword & Shield', 'Scarlet & Violet',
+                'Evolving Skies', 'Brilliant Stars', 'Astral Radiance', 'Lost Origin',
+                'Silver Tempest', 'Crown Zenith', 'Paldea Evolved', 'Obsidian Flames',
+                '151', 'Paradox Rift', 'Paldean Fates', 'Temporal Forces'
+            ];
+            
+            // Check longer names first to avoid partial matches
+            const sortedSets = sets.sort((a, b) => b.length - a.length);
+            
+            for (const set of sortedSets) {
+                const regex = new RegExp(`\\b${set}\\b`, 'i');
+                if (regex.test(query)) {
+                    return set;
+                }
+            }
+            return '';
+        }
+
+        /**
+         * Extract player/Pokémon name (improved accuracy)
+         */
+        function extractPlayer(query) {
+            // Remove known keywords to isolate player/Pokémon name
+            let cleaned = query
+                // Remove years
+                .replace(/\b(19|20)\d{2}\b/g, '')
+                // Remove grades
+                .replace(/PSA|BGS|SGC|CGC\s*\d+(\.\d+)?/gi, '')
+                // Remove sports card brands
+                .replace(/Panini|Topps|Upper Deck|Bowman|Donruss|Fleer|Score|Leaf|SP Authentic/gi, '')
+                // Remove Pokémon brands
+                .replace(/Pokemon|Pokémon|PTCG|Wizards of the Coast|WotC/gi, '')
+                // Remove sports card sets
+                .replace(/Prizm|Chrome|Optic|Mosaic|Select|Contenders|Certified|Crown Royale|National Treasures|Immaculate/gi, '')
+                // Remove Pokémon sets
+                .replace(/Base Set|Jungle|Fossil|Team Rocket|Gym Heroes|Gym Challenge|Neo Genesis|Neo Discovery|Neo Revelation|Neo Destiny/gi, '')
+                .replace(/Legendary Collection|Expedition|Aquapolis|Skyridge|Diamond & Pearl|Platinum|HeartGold|SoulSilver/gi, '')
+                .replace(/Black & White|Sword & Shield|Scarlet & Violet|Evolving Skies|Brilliant Stars|Crown Zenith|Paldea Evolved/gi, '')
+                .replace(/Obsidian Flames|Paradox Rift|Paldean Fates|Temporal Forces/gi, '')
+                // Remove parallels and card types (sports)
+                .replace(/Silver|Gold|Base|Orange|Red|Blue|Green|Purple|Pink|Ruby|Sapphire|Emerald/gi, '')
+                .replace(/Refractor|Shimmer|Tiger Stripe|Zebra|Camo|Cracked Ice|Fast Break|Hyper|Neon|Disco/gi, '')
+                // Remove Pokémon card types
+                .replace(/Holo|Reverse Holo|Reverse|Full Art|Secret Rare|Ultra Rare|Rainbow Rare|Gold Secret/gi, '')
+                .replace(/Hyper Rare|Special Art Rare|Illustration Rare|Double Rare|Shiny Rare|Amazing Rare|Radiant/gi, '')
+                .replace(/VMAX|VSTAR|BREAK|Prime|Legend/gi, '')
+                .replace(/\bV\b|\bGX\b|\bEX\b|\bex\b/gi, '') // Single letter types
+                // Remove card attributes
+                .replace(/Rookie|RC|Auto|Autograph|Jersey|Patch|Memorabilia|Relic|Numbered|Parallel/gi, '')
+                .replace(/1st Edition|Shadowless|Unlimited|Stamped/gi, '')
+                .replace(/\/#?\d+/g, '') // Remove card numbers like /99 or #42
+                // Clean up extra spaces
+                .replace(/\s+/g, ' ')
+                .trim();
+            
+            // Take the first 2-4 words as likely player/Pokémon name
+            const words = cleaned.split(' ').filter(w => w.length > 1); // Allow 2-letter names
+            
+            // Most names are 1-3 words (Charizard, Ja Morant, Patrick Mahomes)
+            const nameLength = Math.min(4, words.length);
+            return words.slice(0, nameLength).join(' ');
+        }
+
+        /**
+         * Extract parallel type (color, variation, insert type)
+         * Includes both sports card parallels and Pokémon card types
+         */
+        function extractParallel(query) {
+            const parallels = [
+                // Sports card parallels
+                'Silver', 'Gold', 'Base', 'Orange', 'Red', 'Blue', 'Green', 'Purple', 'Pink',
+                'Refractor', 'Chrome', 'Shimmer', 'Holo', 'Prizm',
+                'Black', 'White', 'Ruby', 'Sapphire', 'Emerald',
+                'Tiger Stripe', 'Zebra', 'Camo', 'Mosaic', 'Cracked Ice',
+                'Fast Break', 'Hyper', 'Neon', 'Disco', 'Wave',
+                'Ice', 'Fire', 'Scope', 'Lazer', 'Nebula',
+                // Pokémon card types
+                'Holo', 'Reverse Holo', 'Reverse', 'Full Art', 'Secret Rare', 'Ultra Rare',
+                'Rainbow Rare', 'Gold Secret', 'Hyper Rare', 'Special Art Rare', 'Illustration Rare',
+                'Double Rare', 'Shiny', 'Shiny Rare', 'Amazing Rare', 'Radiant',
+                'V', 'VMAX', 'VSTAR', 'GX', 'EX', 'ex', 'Prime', 'Legend', 'BREAK',
+                '1st Edition', 'Shadowless', 'Unlimited', 'Stamped'
+            ];
+            
+            // Look for parallels, checking longer names first
+            const sortedParallels = parallels.sort((a, b) => b.length - a.length);
+            
+            for (const parallel of sortedParallels) {
+                const regex = new RegExp(`\\b${parallel}\\b`, 'i');
+                if (regex.test(query)) {
+                    return parallel;
+                }
+            }
+            return '';
+        }
+
+        /**
+         * Determine sport/card type from context
+         */
+        function extractSport(query) {
+            const lower = query.toLowerCase();
+            
+            // Check for Pokémon
+            if (lower.includes('pokemon') || lower.includes('pokémon') || lower.includes('pikachu') || 
+                lower.includes('charizard') || lower.includes('ptcg') || lower.includes('tcg')) {
+                return 'Pokemon';
+            }
+            
+            // Check for sports
+            if (lower.includes('nba') || lower.includes('basketball')) return 'Basketball';
+            if (lower.includes('nfl') || lower.includes('football')) return 'Football';
+            if (lower.includes('mlb') || lower.includes('baseball')) return 'Baseball';
+            if (lower.includes('nhl') || lower.includes('hockey')) return 'Hockey';
+            
+            return '';
+        }
+
+        /**
+         * Build fallback search based on priority level:
+         * Priority 1: EXACT same card characteristics, different player
+         * Priority 2: SAME player, similar card characteristics
+         */
+        function buildFallbackSearch(parts, priority) {
+            if (priority === 1) {
+                // Priority 1: Match ALL card characteristics EXCEPT player
+                // Goal: Find what similar players' identical cards sell for
+                
+                let searchParts = [];
+                
+                if (parts.year) searchParts.push(parts.year);
+                if (parts.brand) searchParts.push(parts.brand);
+                if (parts.set) searchParts.push(parts.set);
+                if (parts.parallel) searchParts.push(parts.parallel);
+                if (parts.grade) searchParts.push(parts.grade);
+                
+                // Must have at least brand + set to be meaningful
+                if (searchParts.length >= 2) {
+                    return {
+                        type: 'Same Card Type - Different Players',
+                        query: searchParts.join(' ').trim()
+                    };
+                }
+            } else if (priority === 2) {
+                // Priority 2: Same player, match similar characteristics
+                // Goal: Find comparable cards of the same player
+                
+                if (!parts.player) return null;
+                
+                let searchParts = [parts.player]; // Player is required
+                
+                // Add characteristics in order of importance
+                if (parts.brand) searchParts.push(parts.brand);
+                if (parts.year) searchParts.push(parts.year);
+                if (parts.set) searchParts.push(parts.set);
+                // Intentionally skip parallel and grade to broaden search
+                
+                return {
+                    type: 'Same Player - Similar Cards',
+                    query: searchParts.join(' ').trim()
+                };
+            }
+            
+            return null;
+        }
+
+        function generateMockData(query) {
+            const basePrice = 45;
+            const variance = 8;
+            
+            const mockTitles = [
+                `${query} - Sold Listing`,
+                `${query} Near Mint`,
+                `${query} PSA Graded`,
+                `${query} Authentic`,
+                `${query} Great Condition`,
+                `${query} Factory Sealed`,
+                `${query} Mint Card`,
+                `${query} Verified`,
+                `${query} Premium`,
+                `${query} Collector Edition`
+            ];
+            
+            return {
+                cardName: query,
+                recentSales: Array.from({ length: 10 }, (_, i) => ({
+                    price: basePrice + (Math.random() * variance * 2 - variance),
+                    date: new Date(Date.now() - i * 86400000).toLocaleDateString('en-US'),
+                    condition: ['Mint', 'Near Mint', 'Excellent', 'Very Good'][Math.floor(Math.random() * 4)],
+                    title: mockTitles[i],
+                    imageURL: 'https://i.ebayimg.com/images/g/placeholder/s-l140.jpg'
+                }))
+            };
+        }
+
+        function calculateMetrics(salesData, sellerPrice) {
+            const prices = salesData.recentSales.map(sale => sale.price);
+            const average = prices.reduce((a, b) => a + b, 0) / prices.length;
+            const sortedPrices = [...prices].sort((a, b) => a - b);
+            const median = sortedPrices[Math.floor(sortedPrices.length / 2)];
+            const high = Math.max(...prices);
+            const low = Math.min(...prices);
+            
+            const ebayFee = average * (costSettings.ebayFeePercent / 100);
+            const paymentFee = (average * (costSettings.paymentFeePercent / 100)) + costSettings.processorFeeCharge;
+            const supplyCosts = costSettings.supplyCost1 + costSettings.supplyCost2 + 
+                               costSettings.supplyCost3 + costSettings.additionalCosts;
+            const shipping = costSettings.shipping;
+            const totalCosts = ebayFee + paymentFee + supplyCosts + shipping;
+            
+            const netProceeds = average - totalCosts;
+            const suggestedPrice = netProceeds * 0.85;
+            
+            const purchasePrice = parseFloat(sellerPrice);
+            const totalCostBasis = purchasePrice + totalCosts;
+            const potentialProfit = average - totalCostBasis;
+            const roi = ((potentialProfit / purchasePrice) * 100).toFixed(1);
+            
+            const isPriceGood = purchasePrice <= suggestedPrice;
+            const isPriceOk = purchasePrice <= netProceeds * 0.95;
+            
+            let recommendation;
+            if (isPriceGood) {
+                recommendation = { status: 'buy', message: 'Strong Buy - Great deal!' };
+            } else if (isPriceOk) {
+                recommendation = { status: 'consider', message: 'Fair Price - Consider market trends' };
+            } else {
+                recommendation = { status: 'pass', message: 'Overpriced - Pass on this deal' };
+            }
+            
+            return {
+                average: average.toFixed(2),
+                median: median.toFixed(2),
+                high: high.toFixed(2),
+                low: low.toFixed(2),
+                suggestedPrice: suggestedPrice.toFixed(2),
+                netProceeds: netProceeds.toFixed(2),
+                totalCosts: totalCosts.toFixed(2),
+                roi,
+                potentialProfit: potentialProfit.toFixed(2),
+                recommendation,
+                salesCount: prices.length
+            };
+        }
+
+        function displayResults(salesData, metrics) {
+            const resultsSection = document.getElementById('resultsSection');
+            
+            const icon = metrics.recommendation.status === 'buy' ? '✓' : 
+                        metrics.recommendation.status === 'consider' ? '⚠' : '✗';
+            
+            // Show info message if using comparable cards
+            const comparableMessage = salesData.searchType && salesData.searchType !== 'Exact Match' 
+                ? `<div class="info-message">
+                    <span>ℹ️</span>
+                    Exact card not found. Showing ${salesData.searchType}: "${salesData.comparableQuery}"
+                   </div>` 
+                : '';
+            
+            // Build sold listings HTML
+            const listingsHTML = salesData.recentSales.map((sale, index) => `
+                <div class="listing-item">
+                    <div class="listing-image-wrap">
+                        ${sale.imageURL 
+                            ? `<img class="listing-image" src="${sale.imageURL}" alt="Sold listing" onerror="this.parentElement.innerHTML='<div class=&quot;listing-image-placeholder&quot;>📷</div>'">`
+                            : `<div class="listing-image-placeholder">📷</div>`
+                        }
+                    </div>
+                    <div class="listing-info">
+                        <div class="listing-title">${sale.title || 'No title available'}</div>
+                        <div class="listing-details">
+                            <span class="listing-price">$${sale.price.toFixed(2)}</span>
+                            <span class="listing-condition">${sale.condition}</span>
+                            <span class="listing-date">${sale.date}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            resultsSection.innerHTML = `
+                ${comparableMessage}
+                
+                <div class="recommendation-badge ${metrics.recommendation.status}">
+                    <span>${icon}</span>
+                    <span>${metrics.recommendation.message}</span>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card primary">
+                        <div class="metric-label">Average Sale Price</div>
+                        <div class="metric-value">$${metrics.average}</div>
+                        <div class="metric-detail">Based on ${metrics.salesCount} recent sales</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">Net Proceeds (After Fees)</div>
+                        <div class="metric-value">$${metrics.netProceeds}</div>
+                        <div class="metric-detail">Fees: $${metrics.totalCosts}</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">Suggested Purchase Price</div>
+                        <div class="metric-value">$${metrics.suggestedPrice}</div>
+                        <div class="metric-detail">Allows 15% profit margin</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">Realistic ROI</div>
+                        <div class="metric-value ${parseFloat(metrics.roi) > 0 ? 'positive' : 'negative'}">
+                            ${metrics.roi}%
+                        </div>
+                        <div class="metric-detail">Profit: $${metrics.potentialProfit}</div>
+                    </div>
+                </div>
+
+                <!-- Sold Listings Section -->
+                <div class="listings-section">
+                    <div class="listings-header">
+                        <h3>Recent Sold Listings</h3>
+                        <span class="listings-count">${salesData.recentSales.length} listings</span>
+                    </div>
+                    <div class="listings-container">
+                        ${listingsHTML}
+                    </div>
+                </div>
+            `;
+            
+            resultsSection.classList.remove('hidden');
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = '⚠ ' + message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.add('hidden');
+        }
+
+        function showLoading() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingState').classList.add('hidden');
+        }
+
+        // Update AI button when price is entered
+        document.getElementById('sellerPrice').addEventListener('input', updatePhotoButtons);
+    </script>
+</body>
+</html>
