@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+h<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1116,7 +1116,8 @@
                     <span id="batchTotalSuggested">$0.00</span>
                 </div>
                 <div class="batch-summary-row highlight">
-                    <span>Pay No More Than</span>
+                    <span>Pay No More Than</span>1083
+                    
                     <span id="batchMaxPay">$0.00</span>
                 </div>
             </div>
@@ -1650,11 +1651,10 @@ If you cannot identify all fields, use "Unknown" for missing values. The searchQ
             if (USE_REAL_EBAY_API) {
                 try {
                     // Step 1: Exact search
-                    const ebayResults = await  fetch(`https://card-value-apify.cgrayut.workers.dev?q=${encodeURIComponent(query)}`)).jon();
-                    
+const ebayResults = await fetch(`https://card-value-apify.cgrayut.workers.dev?q=${encodeURIComponent(query)}`).json();                    
                     // If we found ANY results for the exact card, use them
                     if (ebayResults && ebayResults.length > 0) {
-                        salesData = {
+                        salesData = {h
                             cardName: query,
                             recentSales: ebayResults.slice(0, 10),
                             searchType: 'Exact Match'
