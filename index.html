@@ -1651,8 +1651,8 @@ If you cannot identify all fields, use "Unknown" for missing values. The searchQ
             if (USE_REAL_EBAY_API) {
                 try {
                     // Step 1: Exact search
-const ebayResults = await fetch(`https://card-value-apify.cgrayut.workers.dev?q=${encodeURIComponent(query)}`).json();                    
-                    // If we found ANY results for the exact card, use them
+const response = await fetch(`https://card-value-apify.cgrayut.workers.dev?q=${encodeURIComponent(query)}`);
+const ebayResults = await response.json();                    // If we found ANY results for the exact card, use them
                     if (ebayResults && ebayResults.length > 0) {
                         salesData = {h
                             cardName: query,
