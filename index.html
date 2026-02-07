@@ -1,4 +1,4 @@
-h<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1116,8 +1116,7 @@ h<!DOCTYPE html>
                     <span id="batchTotalSuggested">$0.00</span>
                 </div>
                 <div class="batch-summary-row highlight">
-                    <span>Pay No More Than</span>1083
-                    
+                    <span>Pay No More Than</span>
                     <span id="batchMaxPay">$0.00</span>
                 </div>
             </div>
@@ -1215,9 +1214,7 @@ h<!DOCTYPE html>
         let cardIdentification = null;
 
         // Configuration
-        1651
-            1649
-                = true;
+        const USE_REAL_EBAY_API = true;
 
         const costSettings = {
             ebayFeePercent: 13.25,
@@ -1651,10 +1648,12 @@ If you cannot identify all fields, use "Unknown" for missing values. The searchQ
             if (USE_REAL_EBAY_API) {
                 try {
                     // Step 1: Exact search
-const response = await fetch(`https://card-value-apify.cgrayut.workers.dev?q=${encodeURIComponent(query)}`);
-const ebayResults = await response.json();                    // If we found ANY results for the exact card, use them
+                    const response = await fetch(`https://card-value-apify.cgrayut.workers.dev?q=${encodeURIComponent(query)}`);
+                    const ebayResults = await response.json();
+                    
+                    // If we found ANY results for the exact card, use them
                     if (ebayResults && ebayResults.length > 0) {
-                        salesData = {h
+                        salesData = {
                             cardName: query,
                             recentSales: ebayResults.slice(0, 10),
                             searchType: 'Exact Match'
