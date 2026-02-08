@@ -1001,6 +1001,81 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* Help Icon & Tooltip Styles */
+        .field-with-help {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .help-icon {
+            background: rgba(167, 139, 250, 0.2);
+            color: #a78bfa;
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: help;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        
+        .help-icon:hover {
+            background: rgba(167, 139, 250, 0.4);
+            transform: scale(1.1);
+        }
+        
+        .help-tooltip {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 20, 40, 0.98);
+            border: 1px solid rgba(167, 139, 250, 0.4);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            max-width: 280px;
+            width: max-content;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .help-icon:hover .help-tooltip {
+            opacity: 1;
+        }
+        
+        .help-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(167, 139, 250, 0.4);
+        }
+        
+        .help-tooltip-title {
+            color: #a78bfa;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .help-tooltip-text {
+            color: #cbd5e0;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -1008,8 +1083,15 @@
         <button class="settings-button" onclick="openSettings()">
             ⚙️ Cost Settings
         </button>
-        <button class="batch-toggle-button" id="batchToggleBtn" onclick="toggleBatchMode()">
-            📦 Batch Mode
+        <button class="batch-toggle-button" id="batchToggleBtn" onclick="toggleBatchMode()" style="display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
+            <span>📦 Batch Mode</span>
+            <div class="help-icon" onclick="event.stopPropagation();">
+                ?
+                <div class="help-tooltip" style="left: auto; right: 0; transform: none;">
+                    <div class="help-tooltip-title">Batch Mode</div>
+                    <div class="help-tooltip-text">Analyze multiple cards at once! Add cards one by one, then see total investment, total value, and overall ROI. Perfect for evaluating bulk purchases or show inventory.</div>
+                </div>
+            </div>
         </button>
         <h1 class="title">Card Value Pro</h1>
         <p class="subtitle">AI-powered card identification & market analysis</p>
@@ -1019,9 +1101,16 @@
     <div class="container">
         <!-- Asking Price Field - Optional, User Can Enter First -->
         <div class="input-group" style="margin-bottom: 1.5rem;">
-            <div class="input-wrapper">
+            <div class="input-wrapper field-with-help">
                 <span class="input-icon">💲</span>
                 <input type="number" id="sellerPrice" placeholder="Asking price (optional)">
+                <div class="help-icon">
+                    ?
+                    <div class="help-tooltip">
+                        <div class="help-tooltip-title">Asking Price</div>
+                        <div class="help-tooltip-text">Enter the seller's asking price if known. This helps calculate potential profit margins and ROI. Leave blank if unknown.</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1077,14 +1166,28 @@
         </div>
 
         <div class="input-group">
-            <div class="input-wrapper">
+            <div class="input-wrapper field-with-help">
                 <span class="input-icon">🔍</span>
                 <input type="text" id="cardQuery" placeholder="Enter card name (e.g., 2023 Panini Prizm Ja Morant PSA 10)">
+                <div class="help-icon">
+                    ?
+                    <div class="help-tooltip">
+                        <div class="help-tooltip-title">Card Search</div>
+                        <div class="help-tooltip-text">Enter player name, year, brand, set, and any special details (parallel, grade, etc.). More specific = better results. Example: "2024 Panini Prizm Silver Travis Hunter PSA 10"</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="input-wrapper">
+            <div class="input-wrapper field-with-help">
                 <span class="input-icon">🎯</span>
                 <input type="text" id="exactMatch" placeholder="Exact match words (optional, e.g., #141 Yellow Border)">
+                <div class="help-icon">
+                    ?
+                    <div class="help-tooltip">
+                        <div class="help-tooltip-title">Exact Match Filter</div>
+                        <div class="help-tooltip-text">Filter results to ONLY show listings containing these exact words. Use for card numbers (#141), specific parallels (Pink Mosaic), or variations (SSP). Helps eliminate similar cards.</div>
+                    </div>
+                </div>
             </div>
             
             <button class="search-button" onclick="handleSearch()">Analyze Deal</button>
