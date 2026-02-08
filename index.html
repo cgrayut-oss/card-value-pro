@@ -1038,19 +1038,21 @@
             left: 50%;
             transform: translateX(-50%);
             background: rgba(20, 20, 40, 0.98);
-            border: 1px solid rgba(167, 139, 250, 0.4);
+            border: 2px solid rgba(167, 139, 250, 0.6);
             border-radius: 8px;
             padding: 0.75rem 1rem;
             max-width: 280px;
             width: max-content;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            z-index: 10000;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.2s;
         }
         
-        .help-icon:hover .help-tooltip {
+        .help-icon:hover .help-tooltip,
+        .help-icon:active .help-tooltip,
+        .help-icon.show-tooltip .help-tooltip {
             opacity: 1;
         }
         
@@ -1534,6 +1536,13 @@
                 return;
             }
 
+            // Disable button and show analyzing state
+            const aiButton = document.getElementById('aiAnalyzeButton');
+            aiButton.disabled = true;
+            aiButton.classList.add('analyzing');
+            const originalText = aiButton.innerHTML;
+            aiButton.innerHTML = '<span>🔄</span><span>Analyzing Card...</span>';
+
             hideError();
             showLoading();
 
@@ -1583,6 +1592,12 @@
                 showError(err.message);
             } finally {
                 hideLoading();
+                
+                // Re-enable button and restore state
+                const aiButton = document.getElementById('aiAnalyzeButton');
+                aiButton.disabled = false;
+                aiButton.classList.remove('analyzing');
+                aiButton.innerHTML = '<span>👁</span><span>AI Identify Card</span>';
             }
         }
 
@@ -1632,6 +1647,12 @@
                 showError(err.message);
             } finally {
                 hideLoading();
+                
+                // Re-enable button and restore state
+                const aiButton = document.getElementById('aiAnalyzeButton');
+                aiButton.disabled = false;
+                aiButton.classList.remove('analyzing');
+                aiButton.innerHTML = '<span>👁</span><span>AI Identify Card</span>';
             }
         }
 
@@ -2193,6 +2214,14 @@
 
         function hideLoading() {
             document.getElementById('loadingState').classList.add('hidden');
+            
+            // Re-enable search button
+            const searchBtn = document.querySelector('.search-button');
+            if (searchBtn) {
+                searchBtn.disabled = false;
+                searchBtn.classList.remove('searching');
+                searchBtn.textContent = 'Analyze Deal';
+            }
         }
 
         // ─── Batch Mode ─────────────────────────────────────────
@@ -2300,6 +2329,32 @@
             arrow.classList.toggle('expanded', !isOpen);
         }
 
+
+        // Mobile tooltip handling
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.help-icon').forEach(icon => {
+                icon.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    
+                    // Close other tooltips
+                    document.querySelectorAll('.help-icon.show-tooltip').forEach(other => {
+                        if (other !== icon) other.classList.remove('show-tooltip');
+                    });
+                    
+                    // Toggle this tooltip
+                    icon.classList.toggle('show-tooltip');
+                    
+                    // Close tooltip when clicking outside
+                    setTimeout(() => {
+                        document.addEventListener('click', function closeTooltip() {
+                            icon.classList.remove('show-tooltip');
+                            document.removeEventListener('click', closeTooltip);
+                        }, { once: true });
+                    }, 100);
+                });
+            });
+        });
     </script>
 </body>
 </html>
