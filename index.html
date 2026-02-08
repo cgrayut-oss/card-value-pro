@@ -1382,103 +1382,24 @@
 
         async function identifyCardFromImage(imageData) {
             try {
-                const response = await fetch("https://api.anthropic.com/v1/messages", {
+                // Call our Cloudflare AI worker instead of Anthropic API directly
+                const response = await fetch("https://card-ai.cgrayut.workers.dev", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        model: "claude-sonnet-4-20250514",
-                        max_tokens: 1000,
-                        messages: [
-                            {
-                                role: "user",
-                                content: [
-                                    {
-                                        type: "image",
-                                        source: {
-                                            type: "base64",
-                                            media_type: "image/jpeg",
-                                            data: imageData.split(',')[1]
-                                        }
-                                    },
-                                    {
-                                        type: "text",
-                                        text: `Analyze this card image and extract the following information.
-
-This could be a SPORTS CARD or a POKÉMON CARD. Identify which type it is and extract the appropriate information:
-
-FOR SPORTS CARDS:
-- Player Name
-- Year
-- Brand/Manufacturer (e.g., Panini, Topps, Upper Deck)
-- Set Name (e.g., Prizm, Chrome, Select)
-- Card Number (if visible)
-- Parallel/Variation (e.g., Silver, Base, Gold)
-- Grade/Condition (if graded - PSA, BGS, SGC)
-- Sport (Basketball, Football, Baseball, etc.)
-
-FOR POKÉMON CARDS:
-- Pokémon Name (e.g., Charizard, Pikachu, Mewtwo)
-- Year
-- Brand (Pokemon, Pokémon Company, Wizards of the Coast)
-- Set Name (e.g., Base Set, Evolving Skies, Scarlet & Violet)
-- Card Number (if visible, often at bottom like 4/102)
-- Card Type/Rarity (e.g., Holo, Full Art, Secret Rare, Rainbow Rare, VMAX, GX)
-- Grade/Condition (if graded - PSA, BGS, CGC)
-- Card Type (Pokemon)
-
-Respond ONLY with a JSON object in this exact format:
-
-FOR SPORTS CARDS:
-{
-  "player": "Player Name",
-  "year": "2023",
-  "brand": "Panini",
-  "set": "Prizm",
-  "cardNumber": "123",
-  "parallel": "Silver",
-  "grade": "PSA 10",
-  "sport": "Basketball",
-  "searchQuery": "2023 Panini Prizm Player Name Silver PSA 10",
-  "confidence": "high"
-}
-
-FOR POKÉMON CARDS:
-{
-  "player": "Charizard",
-  "year": "2023",
-  "brand": "Pokemon",
-  "set": "Obsidian Flames",
-  "cardNumber": "125/197",
-  "parallel": "Full Art",
-  "grade": "PSA 10",
-  "sport": "Pokemon",
-  "searchQuery": "Pokemon Charizard Obsidian Flames Full Art PSA 10",
-  "confidence": "high"
-}
-
-If you cannot identify all fields, use "Unknown" for missing values. The searchQuery should be optimized for eBay search.`
-                                    }
-                                ]
-                            }
-                        ]
+                        imageData: imageData
                     })
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to analyze card image');
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to identify card');
                 }
 
-                const data = await response.json();
-                const textContent = data.content.find(block => block.type === 'text')?.text || '';
-                
-                const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) {
-                    throw new Error('Could not parse card information from image');
-                }
-                
-                return JSON.parse(jsonMatch[0]);
+                const cardInfo = await response.json();
+                return cardInfo;
                 
             } catch (err) {
                 console.error('Card identification error:', err);
