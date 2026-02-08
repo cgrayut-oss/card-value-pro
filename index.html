@@ -1431,11 +1431,21 @@
 
             try {
                 const photoToAnalyze = cardPhotos.front || cardPhotos.back;
+                
+                // Check if photo data exists
+                if (!photoToAnalyze || !photoToAnalyze.startsWith('data:image')) {
+                    alert('Photo data invalid! Length: ' + (photoToAnalyze ? photoToAnalyze.length : 0));
+                    throw new Error('Invalid photo data');
+                }
+                
                 let identified = null;
 
                 try {
                     identified = await identifyCardFromImage(photoToAnalyze);
                 } catch (aiErr) {
+                    // Show error on mobile
+                    alert('AI Error: ' + aiErr.message);
+                    console.error('AI identification failed:', aiErr);
                     // AI API unavailable — use rotating demo card
                     identified = demoCards[demoCardIndex % demoCards.length];
                     demoCardIndex++;
