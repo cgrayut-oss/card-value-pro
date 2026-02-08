@@ -1403,7 +1403,9 @@
                 
             } catch (err) {
                 console.error('Card identification error:', err);
-                throw new Error('Failed to identify card from image. Please enter details manually or try a clearer photo.');
+                // Show actual error details
+                const errorMsg = 'Actual error: ' + err.message + ' | Stack: ' + (err.stack || 'no stack');
+                throw new Error(errorMsg);
             }
         }
 
