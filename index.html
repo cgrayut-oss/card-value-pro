@@ -1051,9 +1051,9 @@
                 </div>
             </div>
 
-            <button id="aiAnalyzeButton" class="ai-analyze-button hidden" onclick="analyzeAndSearch()">
+            <button id="aiAnalyzeButton" class="ai-analyze-button hidden" onclick="analyzeCard()">
                 <span>👁</span>
-                <span>AI Identify & Search Card</span>
+                <span>AI Identify Card</span>
             </button>
 
             <div id="cardIdentification" class="card-identification hidden">
@@ -1499,9 +1499,7 @@ If you cannot identify all fields, use "Unknown" for missing values. The searchQ
         ];
         let demoCardIndex = 0;
 
-        async function analyzeAndSearch() {
-            const sellerPrice = document.getElementById('sellerPrice').value;
-            
+        async function analyzeCard() {
             if (!cardPhotos.front && !cardPhotos.back) {
                 showError('Please take at least one photo of the card first');
                 return;
@@ -1527,11 +1525,20 @@ If you cannot identify all fields, use "Unknown" for missing values. The searchQ
                 // Display identification
                 displayCardIdentification(cardIdentification);
                 
-                // Set the search query
+                // Populate the search field (but don't search yet!)
                 document.getElementById('cardQuery').value = cardIdentification.searchQuery;
                 
-                // Automatically search
-                await performSearch(cardIdentification.searchQuery, sellerPrice);
+                // Hide the AI button, show a success message
+                document.getElementById('aiAnalyzeButton').classList.add('hidden');
+                
+                // Scroll to the manual entry section so user can review/edit
+                document.getElementById('cardQuery').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Show info message
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'info-message';
+                infoDiv.innerHTML = '<span>✓</span> Card identified! Review the details above and click "Analyze Deal" when ready.';
+                document.getElementById('cardIdentification').appendChild(infoDiv);
                 
             } catch (err) {
                 showError(err.message);
