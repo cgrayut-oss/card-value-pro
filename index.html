@@ -1104,6 +1104,41 @@
             font-size: 0.8rem;
             line-height: 1.4;
         }
+
+        /* Microphone Button */
+        .mic-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(167, 139, 250, 0.2);
+            border: 1px solid rgba(167, 139, 250, 0.4);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+        
+        .mic-button:hover {
+            background: rgba(167, 139, 250, 0.3);
+            border-color: rgba(167, 139, 250, 0.6);
+        }
+        
+        .mic-button.listening {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.6);
+            animation: pulse-red 1.5s infinite;
+        }
+        
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
     </style>
 </head>
 <body>
@@ -1194,14 +1229,17 @@
         </div>
 
         <div class="input-group">
-            <div class="input-wrapper field-with-help">
+            <div class="input-wrapper field-with-help" style="position: relative;">
                 <span class="input-icon">🔍</span>
-                <input type="text" id="cardQuery" placeholder="Enter card name (e.g., 2023 Panini Prizm Ja Morant PSA 10)">
+                <input type="text" id="cardQuery" placeholder="Enter card name (or use 🎤 voice)" style="padding-right: 60px;">
+                <button class="mic-button" id="micButton" onclick="toggleVoiceInput()" title="Voice input">
+                    🎤
+                </button>
                 <div class="help-icon">
                     ?
                     <div class="help-tooltip">
                         <div class="help-tooltip-title">Card Search</div>
-                        <div class="help-tooltip-text">Enter player name, year, brand, set, and any special details (parallel, grade, etc.). More specific = better results. Example: "2024 Panini Prizm Silver Travis Hunter PSA 10"</div>
+                        <div class="help-tooltip-text">Type or use voice 🎤 to enter: player name, year, brand, set, parallel, grade. Example: "2024 Panini Prizm Silver Travis Hunter PSA 10"</div>
                     </div>
                 </div>
             </div>
@@ -2350,6 +2388,97 @@
             arrow.classList.toggle('expanded', !isOpen);
         }
 
+
+        // Speech-to-Text functionality
+        let recognition = null;
+        let isListening = false;
+
+        function initSpeechRecognition() {
+            // Check browser support
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                console.log('Speech recognition not supported');
+                return null;
+            }
+            
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                const cardQueryField = document.getElementById('cardQuery');
+                
+                // Append to existing text or replace
+                if (cardQueryField.value) {
+                    cardQueryField.value += ' ' + transcript;
+                } else {
+                    cardQueryField.value = transcript;
+                }
+                
+                console.log('Voice input:', transcript);
+                stopListening();
+            };
+            
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                if (event.error === 'not-allowed') {
+                    showError('Microphone access denied. Please allow microphone access in your browser settings.');
+                } else if (event.error === 'no-speech') {
+                    showError('No speech detected. Please try again.');
+                } else {
+                    showError('Voice input error: ' + event.error);
+                }
+                stopListening();
+            };
+            
+            recognition.onend = () => {
+                stopListening();
+            };
+            
+            return recognition;
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                recognition = initSpeechRecognition();
+                if (!recognition) {
+                    showError('Voice input is not supported in your browser. Please use Chrome, Safari, or Edge.');
+                    return;
+                }
+            }
+            
+            if (isListening) {
+                stopListening();
+            } else {
+                startListening();
+            }
+        }
+
+        function startListening() {
+            try {
+                recognition.start();
+                isListening = true;
+                document.getElementById('micButton').classList.add('listening');
+                hideError();
+            } catch (error) {
+                console.error('Failed to start speech recognition:', error);
+                showError('Could not start voice input. Please try again.');
+            }
+        }
+
+        function stopListening() {
+            if (recognition && isListening) {
+                recognition.stop();
+            }
+            isListening = false;
+            const micButton = document.getElementById('micButton');
+            if (micButton) {
+                micButton.classList.remove('listening');
+            }
+        }
     </script>
 </body>
 </html>
