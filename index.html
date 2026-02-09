@@ -1727,8 +1727,24 @@
             if (USE_REAL_EBAY_API) {
                 try {
                     // Step 1: Exact search
+                    console.log('Calling Apify worker:', query);
                     const response = await fetch(`https://card-value-apify.cgrayut.workers.dev?q=${encodeURIComponent(query)}`);
+                    
+                    console.log('Apify response status:', response.status);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Apify error response:', errorText);
+                        throw new Error(`Apify worker returned ${response.status}: ${errorText}`);
+                    }
+                    
                     const ebayResults = await response.json();
+                    console.log('Apify results:', ebayResults.length, 'items');
+                    
+                    // Check if results are actually valid
+                    if (!Array.isArray(ebayResults)) {
+                        console.error('Apify returned non-array:', ebayResults);
+                        throw new Error('Apify returned invalid data format');
+                    }
                     
                     // Apply exact match filter if provided
                     let filteredResults = ebayResults;
@@ -1795,10 +1811,12 @@
                         }
                     }
                 } catch (err) {
-                    // eBay API unavailable - silently fall back to mock data
+                    console.error('eBay API Error:', err);
+                    // Show detailed error to user
+                    showError(`eBay search failed: ${err.message}. Using demo data. Check Cloudflare worker logs.`);
                     salesData = generateMockData(query);
-                    salesData.searchType = 'Demo Mode';
-                    salesData.comparableQuery = 'Live data coming soon';
+                    salesData.searchType = 'Demo Mode (API Error)';
+                    salesData.comparableQuery = err.message || 'API call failed';
                 }
             } else {
                 await new Promise(resolve => setTimeout(resolve, 1500));
@@ -2117,7 +2135,7 @@
             const comparableMessage = salesData.searchType === 'Demo Mode'
                 ? `<div class="info-message">
                     <span>ℹ️</span>
-                    Showing sample data. Live eBay pricing will be available shortly.
+                    ${salesData.searchType === 'Demo Mode' || salesData.searchType === 'Demo Mode (API Error)' ? 'DEMO DATA - Apify returned no results or worker error occurred' : 'Live eBay Data'}
                    </div>`
                 : salesData.searchType && salesData.searchType !== 'Exact Match' 
                     ? `<div class="info-message">
