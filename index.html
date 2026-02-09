@@ -1280,7 +1280,7 @@
                     </div>
                     <div class="setting-item">
                         <label>Processor Fee %</label>
-                        <input type="number" step="0.01" id="paymentFeePercent" value="3.00">
+                        <input type="number" step="0.01" id="paymentFeePercent" value="0.00">
                     </div>
                     <div class="setting-item">
                         <label>Processor Fee Charge $</label>
@@ -1291,23 +1291,23 @@
                 <div class="settings-section">
                     <h3>Supply & Other Costs ($)</h3>
                     <div class="setting-item">
-                        <label>Supply Cost 1</label>
-                        <input type="number" step="0.01" id="supplyCost1" value="0.50">
+                        <label>Supply Cost 1 ($)</label>
+                        <input type="number" step="0.01" id="supplyCost1" value="0.25">
                     </div>
                     <div class="setting-item">
-                        <label>Supply Cost 2</label>
+                        <label>Supply Cost 2 ($)</label>
                         <input type="number" step="0.01" id="supplyCost2" value="0.05">
                     </div>
                     <div class="setting-item">
-                        <label>Supply Cost 3</label>
+                        <label>Supply Cost 3 ($)</label>
                         <input type="number" step="0.01" id="supplyCost3" value="0.15">
                     </div>
                     <div class="setting-item">
-                        <label>Shipping Cost</label>
-                        <input type="number" step="0.01" id="shipping" value="5.00">
+                        <label>Shipping Cost ($)</label>
+                        <input type="number" step="0.01" id="shipping" value="0.00">
                     </div>
                     <div class="setting-item">
-                        <label>Additional Costs</label>
+                        <label>Additional Costs ($)</label>
                         <input type="number" step="0.01" id="additionalCosts" value="0.00">
                     </div>
                 </div>
@@ -1316,7 +1316,7 @@
                     <h3>Profit Target</h3>
                     <div class="setting-item">
                         <label>Profit Margin %</label>
-                        <input type="number" step="1" id="profitMargin" value="15">
+                        <input type="number" step="1" id="profitMargin" value="20">
                     </div>
                 </div>
             </div>
@@ -1357,14 +1357,14 @@
 
         const costSettings = {
             ebayFeePercent: 13.25,
-            paymentFeePercent: 3.0,
-            processorFeeCharge: 0.30,
-            supplyCost1: 0.50,
+            paymentFeePercent: 0.00,        // Changed to 0.00 (Processor Fee %)
+            processorFeeCharge: 0.30,       // Keep at 0.30 (Processor Fee Charge $)
+            supplyCost1: 0.25,
             supplyCost2: 0.05,
             supplyCost3: 0.15,
-            shipping: 5.00,
+            shipping: 0.00,
             additionalCosts: 0.00,
-            profitMargin: 15
+            profitMargin: 20
         };
 
         function updatePhotoButtons() {
