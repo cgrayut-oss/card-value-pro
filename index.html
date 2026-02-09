@@ -132,12 +132,13 @@
         }
 
         .photo-preview {
-            width: 100%;
-            height: 100%;
             position: relative;
-            border-radius: 12px;
+            width: 100%;
+            padding-bottom: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
             overflow: hidden;
-            border: 2px solid #60efff;
+            margin-bottom: 1rem;
         }
 
         .photo-preview img {
@@ -175,22 +176,26 @@
         }
 
         .ai-analyze-button {
-            width: 100%;
-            padding: 1.25rem;
-            background: linear-gradient(135deg, #60efff 0%, #0061ff 100%);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(96, 239, 255, 0.4);
-            animation: glow 2s ease-in-out infinite;
+            width: 100% !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            border: none !important;
+            padding: 1.5rem !important;
+            border-radius: 12px !important;
+            font-size: 1.2rem !important;
+            font-weight: 800 !important;
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 0.5rem !important;
+            transition: all 0.3s !important;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5) !important;
+            margin-top: 2rem !important;
+            margin-bottom: 2rem !important;
+            position: relative !important;
+            z-index: 1000 !important;
+            clear: both !important;
         }
 
         @keyframes glow {
@@ -974,18 +979,22 @@
         }
 
         .capture-button {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, #60efff 0%, #0061ff 100%);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 5px 20px rgba(96, 239, 255, 0.4);
+            position: fixed !important;
+            bottom: 120px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: #60efff !important;
+            color: #0a0e27 !important;
+            border: 4px solid #0a0e27 !important;
+            padding: 1.8rem 4rem !important;
+            border-radius: 50px !important;
+            font-size: 1.4rem !important;
+            font-weight: 900 !important;
+            cursor: pointer !important;
+            box-shadow: 0 10px 40px rgba(96, 239, 255, 0.9) !important;
+            z-index: 99999 !important;
+            min-width: 280px !important;
+            text-transform: uppercase !important;
         }
 
         .hidden {
@@ -1033,27 +1042,39 @@
         }
         
         .help-tooltip {
-            position: absolute;
-            bottom: calc(100% + 10px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(20, 20, 40, 0.98);
-            border: 2px solid rgba(167, 139, 250, 0.6);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            max-width: 280px;
-            width: max-content;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-            z-index: 10000;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s;
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            background: rgba(20, 20, 40, 0.98) !important;
+            border: 3px solid rgba(167, 139, 250, 0.8) !important;
+            border-radius: 12px !important;
+            padding: 1rem 1.5rem !important;
+            max-width: 90% !important;
+            width: auto !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8) !important;
+            z-index: 999999 !important;
+            pointer-events: none !important;
+            opacity: 0 !important;
+            transition: opacity 0.2s !important;
         }
         
-        .help-icon:hover .help-tooltip,
-        .help-icon:active .help-tooltip,
-        .help-icon.show-tooltip .help-tooltip {
-            opacity: 1;
+        .help-icon:hover .help-tooltip {
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            background: rgba(20, 20, 40, 0.98) !important;
+            border: 3px solid rgba(167, 139, 250, 0.8) !important;
+            border-radius: 12px !important;
+            padding: 1rem 1.5rem !important;
+            max-width: 90% !important;
+            width: auto !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8) !important;
+            z-index: 999999 !important;
+            pointer-events: none !important;
+            opacity: 0 !important;
+            transition: opacity 0.2s !important;
         }
         
         .help-tooltip::after {
@@ -1536,13 +1557,6 @@
                 return;
             }
 
-            // Disable button and show analyzing state
-            const aiButton = document.getElementById('aiAnalyzeButton');
-            aiButton.disabled = true;
-            aiButton.classList.add('analyzing');
-            const originalText = aiButton.innerHTML;
-            aiButton.innerHTML = '<span>🔄</span><span>Analyzing Card...</span>';
-
             hideError();
             showLoading();
 
@@ -1592,12 +1606,6 @@
                 showError(err.message);
             } finally {
                 hideLoading();
-                
-                // Re-enable button and restore state
-                const aiButton = document.getElementById('aiAnalyzeButton');
-                aiButton.disabled = false;
-                aiButton.classList.remove('analyzing');
-                aiButton.innerHTML = '<span>👁</span><span>AI Identify Card</span>';
             }
         }
 
@@ -1647,12 +1655,6 @@
                 showError(err.message);
             } finally {
                 hideLoading();
-                
-                // Re-enable button and restore state
-                const aiButton = document.getElementById('aiAnalyzeButton');
-                aiButton.disabled = false;
-                aiButton.classList.remove('analyzing');
-                aiButton.innerHTML = '<span>👁</span><span>AI Identify Card</span>';
             }
         }
 
@@ -2214,14 +2216,6 @@
 
         function hideLoading() {
             document.getElementById('loadingState').classList.add('hidden');
-            
-            // Re-enable search button
-            const searchBtn = document.querySelector('.search-button');
-            if (searchBtn) {
-                searchBtn.disabled = false;
-                searchBtn.classList.remove('searching');
-                searchBtn.textContent = 'Analyze Deal';
-            }
         }
 
         // ─── Batch Mode ─────────────────────────────────────────
@@ -2329,32 +2323,6 @@
             arrow.classList.toggle('expanded', !isOpen);
         }
 
-
-        // Mobile tooltip handling
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.help-icon').forEach(icon => {
-                icon.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    
-                    // Close other tooltips
-                    document.querySelectorAll('.help-icon.show-tooltip').forEach(other => {
-                        if (other !== icon) other.classList.remove('show-tooltip');
-                    });
-                    
-                    // Toggle this tooltip
-                    icon.classList.toggle('show-tooltip');
-                    
-                    // Close tooltip when clicking outside
-                    setTimeout(() => {
-                        document.addEventListener('click', function closeTooltip() {
-                            icon.classList.remove('show-tooltip');
-                            document.removeEventListener('click', closeTooltip);
-                        }, { once: true });
-                    }, 100);
-                });
-            });
-        });
     </script>
 </body>
 </html>
