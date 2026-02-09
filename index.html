@@ -1514,17 +1514,19 @@
             updatePhotoButtons();
         }
 
-        async function identifyCardFromImage(imageData) {
+        async function identifyCardFromImage(frontImage, backImage) {
             try {
-                // Call our Cloudflare AI worker instead of Anthropic API directly
+                // Call our Cloudflare AI worker with BOTH photos
+                const requestBody = {};
+                if (frontImage) requestBody.frontImage = frontImage;
+                if (backImage) requestBody.backImage = backImage;
+                
                 const response = await fetch("https://card-ai.cgrayut.workers.dev", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({
-                        imageData: imageData
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
                 if (!response.ok) {
