@@ -1623,20 +1623,20 @@
                 { label: 'Year', value: info.year },
                 { label: 'Brand', value: info.brand },
                 { label: 'Set', value: info.set },
+                { label: 'Card #', value: info.cardNumber },
                 { label: 'Parallel', value: info.parallel },
                 { label: 'Grade', value: info.grade }
             ];
             
             fields.forEach(field => {
-                if (field.value !== 'Unknown') {
-                    const item = document.createElement('div');
-                    item.className = 'id-item';
-                    item.innerHTML = `
-                        <span class="id-label">${field.label}:</span>
-                        <span class="id-value">${field.value}</span>
-                    `;
-                    container.appendChild(item);
-                }
+                // Show all fields, even if Unknown (user can edit them)
+                const item = document.createElement('div');
+                item.className = 'id-item';
+                item.innerHTML = `
+                    <span class="id-label">${field.label}:</span>
+                    <span class="id-value">${field.value || 'Unknown'}</span>
+                `;
+                container.appendChild(item);
             });
             
             document.getElementById('cardIdentification').classList.remove('hidden');
@@ -2084,7 +2084,9 @@
             const totalCosts = ebayFee + paymentFee + supplyCosts + shipping;
             
             const netProceeds = average - totalCosts;
-            const suggestedPrice = netProceeds * ((100 - costSettings.profitMargin) / 100);
+            // Suggested price: What you should pay to achieve target profit margin
+            // Formula: netProceeds / (1 + profitMargin/100)
+            const suggestedPrice = netProceeds / (1 + (costSettings.profitMargin / 100));
             
             // These only apply if seller price is provided
             const hasPurchasePrice = sellerPrice && parseFloat(sellerPrice) > 0;
