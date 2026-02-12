@@ -448,6 +448,25 @@
             line-height: 1.3;
         }
 
+        .listing-title-link {
+            color: #60efff;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+            text-decoration: none;
+            display: block;
+            transition: color 0.2s ease;
+        }
+
+        .listing-title-link:hover {
+            color: #a0f0ff;
+            text-decoration: underline;
+        }
+
+        .listing-title-link:visited {
+            color: #a78bfa;
+        }
+
         .listing-details {
             display: flex;
             gap: 1rem;
@@ -2336,13 +2355,16 @@
             const listingsHTML = salesData.recentSales.map((sale, index) => `
                 <div class="listing-item">
                     <div class="listing-image-wrap">
-                        ${sale.imageURL 
-                            ? `<img class="listing-image" src="${sale.imageURL}" alt="Sold listing" onerror="this.parentElement.innerHTML='<div class=&quot;listing-image-placeholder&quot;>📷</div>'">`
+                        ${sale.imageURL || sale.image
+                            ? `<img class="listing-image" src="${sale.imageURL || sale.image}" alt="Sold listing" onerror="this.parentElement.innerHTML='<div class=&quot;listing-image-placeholder&quot;>📷</div>'">`
                             : `<div class="listing-image-placeholder">📷</div>`
                         }
                     </div>
                     <div class="listing-info">
-                        <div class="listing-title">${sale.title || 'No title available'}</div>
+                        ${sale.url 
+                            ? `<a href="${sale.url}" target="_blank" rel="noopener noreferrer" class="listing-title-link">${sale.title || 'No title available'}</a>`
+                            : `<div class="listing-title">${sale.title || 'No title available'}</div>`
+                        }
                         <div class="listing-details">
                             <span class="listing-price">$${sale.price.toFixed(2)}</span>
                             <span class="listing-condition">${sale.condition}</span>
