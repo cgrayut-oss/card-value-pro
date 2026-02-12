@@ -1190,9 +1190,9 @@
                             <span class="photo-label">Front</span>
                         </div>
                     </div>
-                    <button id="frontCameraButton" class="camera-button" onclick="startCamera('front')">
-                        <span style="font-size: 2rem;">📷</span>
-                        <span>Take Front Photo</span>
+                    <button id="frontCameraButton" class="camera-button" onclick="selectPhotoFile('front')">
+                        <span style="font-size: 2rem;">📁</span>
+                        <span>Select Front Photo</span>
                     </button>
                 </div>
                 
@@ -1204,12 +1204,16 @@
                             <span class="photo-label">Back</span>
                         </div>
                     </div>
-                    <button id="backCameraButton" class="camera-button" onclick="startCamera('back')">
-                        <span style="font-size: 2rem;">📷</span>
-                        <span>Take Back Photo</span>
+                    <button id="backCameraButton" class="camera-button" onclick="selectPhotoFile('back')">
+                        <span style="font-size: 2rem;">📁</span>
+                        <span>Select Back Photo</span>
                     </button>
                 </div>
             </div>
+
+            <!-- Hidden file inputs for photo upload -->
+            <input type="file" id="frontFileInput" accept="image/*" style="display: none;">
+            <input type="file" id="backFileInput" accept="image/*" style="display: none;">
 
             <button id="aiAnalyzeButton" class="ai-analyze-button hidden" onclick="analyzeCard()">
                 <span>👁</span>
@@ -1551,7 +1555,66 @@
             
             updatePhotoButtons();
         }
-// ═══════════════════════════════════════════════════════════════
+
+        // ═══════════════════════════════════════════════════════════════
+        // FILE UPLOAD HANDLING - Alternative to camera
+        // ═══════════════════════════════════════════════════════════════
+        
+        function selectPhotoFile(side) {
+            // Trigger the hidden file input
+            document.getElementById(side + 'FileInput').click();
+        }
+
+        // Setup file input listeners when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('frontFileInput').addEventListener('change', function(e) {
+                handleFileSelection('front', e.target.files[0]);
+            });
+            
+            document.getElementById('backFileInput').addEventListener('change', function(e) {
+                handleFileSelection('back', e.target.files[0]);
+            });
+        });
+
+        function handleFileSelection(side, file) {
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showError('Please select an image file');
+                return;
+            }
+            
+            console.log(`📁 Loading ${side} photo from file...`);
+            
+            // Read the file
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const photoData = e.target.result;
+                cardPhotos[side] = photoData;
+                
+                // Update UI
+                const preview = document.getElementById(side + 'PhotoPreview');
+                const button = document.getElementById(side + 'CameraButton');
+                const img = document.getElementById(side + 'PhotoImg');
+                
+                img.src = photoData;
+                preview.classList.remove('hidden');
+                button.classList.add('hidden');
+                
+                updatePhotoButtons();
+                
+                console.log(`✅ ${side} photo loaded successfully`);
+            };
+            
+            reader.onerror = function() {
+                showError('Failed to read image file. Please try again.');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
         // IMAGE PREPROCESSING - Enhances card photos for better AI reading
         // ═══════════════════════════════════════════════════════════════
         
