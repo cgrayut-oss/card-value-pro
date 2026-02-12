@@ -1762,10 +1762,8 @@
                 let identified = null;
 
                 try {
-                    try {
                     // NEW: Pass both front AND back images for better analysis
                     identified = await identifyCardFromImage(cardPhotos.front, cardPhotos.back);
-                } catch (aiErr) {
                 } catch (aiErr) {
                     // Show error on mobile
                     alert('AI Error: ' + aiErr.message);
