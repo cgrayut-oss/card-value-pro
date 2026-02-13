@@ -2395,10 +2395,11 @@
                             <span class="listing-price">$${sale.price.toFixed(2)}</span>
                             <span class="listing-condition">${sale.condition}</span>
                             <span class="listing-date">${sale.date}</span>
-                        </div>`;
+                        </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
             
             resultsSection.innerHTML = `
                 ${comparableMessage}
