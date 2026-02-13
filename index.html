@@ -1945,6 +1945,11 @@
                     const ebayResults = await response.json();
                     console.log('Apify results:', ebayResults.length, 'items');
                     
+                    // DEBUG: Log first item to see structure
+                    if (ebayResults.length > 0) {
+                        console.log('First Apify item structure:', JSON.stringify(ebayResults[0], null, 2));
+                    }
+                    
                     // Check if results are actually valid
                     if (!Array.isArray(ebayResults)) {
                         console.error('Apify returned non-array:', ebayResults);
@@ -2352,24 +2357,45 @@
                     : '';
             
             // Build sold listings HTML
-            const listingsHTML = salesData.recentSales.map((sale, index) => `
+            const listingsHTML = salesData.recentSales.map((sale, index) => {
+                // Handle multiple possible image field names
+                const imageUrl = sale.imageURL || sale.image || sale.galleryURL || sale.pictureURL || '';
+                
+                // Handle multiple possible URL field names
+                const listingUrl = sale.url || sale.itemURL || sale.link || '';
+                
+                // NEW: If we have a URL but no image, try to extract from eBay
+                // eBay item URLs follow pattern: https://www.ebay.com/itm/ITEM_ID
+                let displayImageUrl = imageUrl;
+                if (!displayImageUrl && listingUrl) {
+                    // Extract item ID from URL
+                    const itemIdMatch = listingUrl.match(/\/itm\/(\d+)/);
+                    if (itemIdMatch && itemIdMatch[1]) {
+                        // Use eBay's image CDN URL pattern
+                        // Format: https://i.ebayimg.com/images/g/[itemId]/s-l300.jpg
+                        const itemId = itemIdMatch[1];
+                        displayImageUrl = `https://i.ebayimg.com/images/g/~${itemId}/s-l300.jpg`;
+                    }
+                }
+                
+                return `
                 <div class="listing-item">
                     <div class="listing-image-wrap">
-                        ${sale.imageURL || sale.image
-                            ? `<img class="listing-image" src="${sale.imageURL || sale.image}" alt="Sold listing" onerror="this.parentElement.innerHTML='<div class=&quot;listing-image-placeholder&quot;>📷</div>'">`
+                        ${displayImageUrl
+                            ? `<img class="listing-image" src="${displayImageUrl}" alt="Sold listing" onerror="this.parentElement.innerHTML='<div class=&quot;listing-image-placeholder&quot;>📷</div>'">`
                             : `<div class="listing-image-placeholder">📷</div>`
                         }
                     </div>
                     <div class="listing-info">
-                        ${sale.url 
-                            ? `<a href="${sale.url}" target="_blank" rel="noopener noreferrer" class="listing-title-link">${sale.title || 'No title available'}</a>`
+                        ${listingUrl 
+                            ? `<a href="${listingUrl}" target="_blank" rel="noopener noreferrer" class="listing-title-link">${sale.title || 'No title available'}</a>`
                             : `<div class="listing-title">${sale.title || 'No title available'}</div>`
                         }
                         <div class="listing-details">
                             <span class="listing-price">$${sale.price.toFixed(2)}</span>
                             <span class="listing-condition">${sale.condition}</span>
                             <span class="listing-date">${sale.date}</span>
-                        </div>
+                        </div>`;
                     </div>
                 </div>
             `).join('');
