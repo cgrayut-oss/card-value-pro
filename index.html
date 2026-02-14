@@ -2573,6 +2573,7 @@
                 listingItem.classList.add('listing-deselected');
             }
             
+            console.log(`Listing ${index} toggled. Selected count: ${selectedListings.size}`);
             recalculateMetrics();
         }
         
@@ -2605,8 +2606,15 @@
         }
         
         function recalculateMetrics() {
+            console.log('🔄 Recalculating metrics...', {
+                hasData: !!currentSalesData,
+                selectedCount: selectedListings.size,
+                totalCount: currentSalesData?.recentSales?.length
+            });
+            
             if (!currentSalesData || selectedListings.size === 0) {
                 // No listings selected - show warning
+                console.log('⚠️ No listings selected');
                 updateMetricsDisplay(null, 0);
                 return;
             }
@@ -2616,11 +2624,19 @@
                 selectedListings.has(index)
             );
             
+            console.log('✅ Recalculating with', selectedSales.length, 'selected listings');
+            
             // Recalculate metrics with only selected listings
             const newMetrics = calculateMetrics(
                 { recentSales: selectedSales }, 
                 currentSellerPrice
             );
+            
+            console.log('📊 New metrics:', {
+                average: newMetrics.average,
+                netProceeds: newMetrics.netProceeds,
+                suggested: newMetrics.suggestedPrice
+            });
             
             // Update display
             updateMetricsDisplay(newMetrics, selectedSales.length);
@@ -2629,6 +2645,12 @@
             const countEl = document.getElementById('listingsCount');
             if (countEl) {
                 countEl.textContent = `${selectedSales.length} of ${currentSalesData.recentSales.length} selected`;
+            }
+            
+            // Scroll to metrics to show the update
+            const metricsGrid = document.querySelector('.metrics-grid');
+            if (metricsGrid) {
+                metricsGrid.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         }
         
