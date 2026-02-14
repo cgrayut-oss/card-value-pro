@@ -2633,12 +2633,24 @@
         }
         
         function updateMetricsDisplay(metrics, selectedCount) {
+            // Update count indicator first
+            const countEl = document.getElementById('listingsCount');
+            if (countEl) {
+                countEl.textContent = `${selectedCount} of ${currentSalesData.recentSales.length} selected`;
+            }
+            
             if (!metrics || selectedCount === 0) {
-                // Show "no selections" message
+                // Show "no selections" message in metrics area only
+                const recommendationBadge = document.querySelector('.recommendation-badge');
                 const metricsGrid = document.querySelector('.metrics-grid');
+                
+                if (recommendationBadge) {
+                    recommendationBadge.style.display = 'none';
+                }
+                
                 if (metricsGrid) {
                     metricsGrid.innerHTML = `
-                        <div class="info-message">
+                        <div class="info-message" style="grid-column: 1 / -1;">
                             <span>⚠️</span>
                             Please select at least one listing to calculate metrics
                         </div>
@@ -2647,20 +2659,28 @@
                 return;
             }
             
-            // Update metrics display
+            // Update recommendation badge
             const icon = metrics.recommendation 
                 ? (metrics.recommendation.status === 'buy' ? '✓' : 
                    metrics.recommendation.status === 'consider' ? '⚠' : '✗')
                 : '';
             
-            const metricsHTML = `
-                ${metrics.hasPurchasePrice ? `
-                    <div class="recommendation-badge ${metrics.recommendation.status}">
-                        <span>${icon}</span>
-                        <span>${metrics.recommendation.message}</span>
-                    </div>` : ''}
-
-                <div class="metrics-grid">
+            const recommendationBadge = document.querySelector('.recommendation-badge');
+            if (metrics.hasPurchasePrice && recommendationBadge) {
+                recommendationBadge.style.display = 'flex';
+                recommendationBadge.className = `recommendation-badge ${metrics.recommendation.status}`;
+                recommendationBadge.innerHTML = `
+                    <span>${icon}</span>
+                    <span>${metrics.recommendation.message}</span>
+                `;
+            } else if (recommendationBadge) {
+                recommendationBadge.style.display = 'none';
+            }
+            
+            // Update metrics grid
+            const metricsGrid = document.querySelector('.metrics-grid');
+            if (metricsGrid) {
+                metricsGrid.innerHTML = `
                     <div class="metric-card">
                         <div class="metric-label">Average Sale Price</div>
                         <div class="metric-value">$${metrics.average}</div>
@@ -2687,16 +2707,7 @@
                         </div>
                         <div class="metric-detail">Profit: $${metrics.potentialProfit}</div>
                     </div>` : ''}
-                </div>
-            `;
-            
-            // Find and update the metrics section
-            const resultsSection = document.getElementById('resultsSection');
-            const listingsSection = resultsSection.querySelector('.listings-section');
-            const existingMetrics = resultsSection.querySelector('.recommendation-badge, .metrics-grid')?.parentElement;
-            
-            if (existingMetrics) {
-                existingMetrics.innerHTML = metricsHTML;
+                `;
             }
         }
 
