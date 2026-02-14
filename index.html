@@ -2371,10 +2371,11 @@
                     // Extract item ID from URL
                     const itemIdMatch = listingUrl.match(/\/itm\/(\d+)/);
                     if (itemIdMatch && itemIdMatch[1]) {
-                        // Use eBay's image CDN URL pattern
-                        // Format: https://i.ebayimg.com/images/g/[itemId]/s-l300.jpg
+                        // Use eBay's thumbnail service
+                        // Format: https://thumbs.ebayimg.com/images/g/[itemId]/s-l300.png
                         const itemId = itemIdMatch[1];
-                        displayImageUrl = `https://i.ebayimg.com/images/g/~${itemId}/s-l300.jpg`;
+                        // Try multiple eBay image URL patterns
+                        displayImageUrl = `https://thumbs.ebayimg.com/images/g/${itemId}/s-l300.png`;
                     }
                 }
                 
