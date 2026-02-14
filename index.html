@@ -375,6 +375,14 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .listings-title-group {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
         }
 
         .listings-header h3 {
@@ -386,6 +394,32 @@
         .listings-count {
             color: #718096;
             font-size: 0.85rem;
+        }
+
+        .listings-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .selection-btn {
+            padding: 0.4rem 0.8rem;
+            background: rgba(96, 239, 255, 0.1);
+            border: 1px solid rgba(96, 239, 255, 0.3);
+            border-radius: 6px;
+            color: #60efff;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .selection-btn:hover {
+            background: rgba(96, 239, 255, 0.2);
+            border-color: #60efff;
+        }
+
+        .selection-btn:active {
+            transform: scale(0.95);
         }
 
         .listings-container {
@@ -408,6 +442,25 @@
         .listing-item:hover {
             background: rgba(96, 239, 255, 0.08);
             border-color: rgba(96, 239, 255, 0.35);
+        }
+
+        .listing-item.listing-deselected {
+            opacity: 0.4;
+            background: rgba(255, 255, 255, 0.01);
+            border-color: rgba(96, 239, 255, 0.1);
+        }
+
+        .listing-checkbox-wrap {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .listing-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #60efff;
         }
 
         .listing-image-wrap {
@@ -2335,8 +2388,20 @@
             };
         }
 
+        // Global variables for listing selection and recalculation
+        let currentSalesData = null;
+        let currentSellerPrice = null;
+        let selectedListings = new Set(); // Track which listings are selected
+
         function displayResults(salesData, metrics) {
             const resultsSection = document.getElementById('resultsSection');
+            
+            // Store globally for recalculation
+            currentSalesData = salesData;
+            currentSellerPrice = document.getElementById('sellerPrice').value;
+            
+            // Initialize all listings as selected
+            selectedListings = new Set(salesData.recentSales.map((_, index) => index));
             
             const icon = metrics.recommendation 
                 ? (metrics.recommendation.status === 'buy' ? '✓' : 
@@ -2356,7 +2421,7 @@
                        </div>` 
                     : '';
             
-            // Build sold listings HTML
+            // Build sold listings HTML with checkboxes
             const listingsHTML = salesData.recentSales.map((sale, index) => {
                 // Handle multiple possible image field names
                 const imageUrl = sale.imageURL || sale.image || sale.galleryURL || sale.pictureURL || '';
@@ -2380,7 +2445,14 @@
                 }
                 
                 return `
-                <div class="listing-item">
+                <div class="listing-item" data-listing-index="${index}">
+                    <div class="listing-checkbox-wrap">
+                        <input type="checkbox" 
+                               id="listing-${index}" 
+                               class="listing-checkbox" 
+                               checked 
+                               onchange="toggleListing(${index})">
+                    </div>
                     <div class="listing-image-wrap">
                         ${displayImageUrl
                             ? `<img class="listing-image" src="${displayImageUrl}" alt="Sold listing" onerror="this.parentElement.innerHTML='<div class=&quot;listing-image-placeholder&quot;>📷</div>'">`
@@ -2443,8 +2515,14 @@
                 <!-- Sold Listings Section -->
                 <div class="listings-section">
                     <div class="listings-header">
-                        <h3>Recent Sold Listings</h3>
-                        <span class="listings-count">${salesData.recentSales.length} listings</span>
+                        <div class="listings-title-group">
+                            <h3>Recent Sold Listings</h3>
+                            <span class="listings-count" id="listingsCount">${salesData.recentSales.length} of ${salesData.recentSales.length} selected</span>
+                        </div>
+                        <div class="listings-controls">
+                            <button class="selection-btn" onclick="selectAllListings()">Select All</button>
+                            <button class="selection-btn" onclick="deselectAllListings()">Deselect All</button>
+                        </div>
                     </div>
                     <div class="listings-container">
                         ${listingsHTML}
@@ -2478,6 +2556,151 @@
         function hideLoading() {
             document.getElementById('loadingState').classList.add('hidden');
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // LISTING SELECTION & RECALCULATION
+        // ═══════════════════════════════════════════════════════════════
+        
+        function toggleListing(index) {
+            const checkbox = document.getElementById(`listing-${index}`);
+            const listingItem = document.querySelector(`[data-listing-index="${index}"]`);
+            
+            if (checkbox.checked) {
+                selectedListings.add(index);
+                listingItem.classList.remove('listing-deselected');
+            } else {
+                selectedListings.delete(index);
+                listingItem.classList.add('listing-deselected');
+            }
+            
+            recalculateMetrics();
+        }
+        
+        function selectAllListings() {
+            if (!currentSalesData) return;
+            
+            currentSalesData.recentSales.forEach((_, index) => {
+                selectedListings.add(index);
+                const checkbox = document.getElementById(`listing-${index}`);
+                const listingItem = document.querySelector(`[data-listing-index="${index}"]`);
+                if (checkbox) checkbox.checked = true;
+                if (listingItem) listingItem.classList.remove('listing-deselected');
+            });
+            
+            recalculateMetrics();
+        }
+        
+        function deselectAllListings() {
+            if (!currentSalesData) return;
+            
+            currentSalesData.recentSales.forEach((_, index) => {
+                selectedListings.delete(index);
+                const checkbox = document.getElementById(`listing-${index}`);
+                const listingItem = document.querySelector(`[data-listing-index="${index}"]`);
+                if (checkbox) checkbox.checked = false;
+                if (listingItem) listingItem.classList.add('listing-deselected');
+            });
+            
+            recalculateMetrics();
+        }
+        
+        function recalculateMetrics() {
+            if (!currentSalesData || selectedListings.size === 0) {
+                // No listings selected - show warning
+                updateMetricsDisplay(null, 0);
+                return;
+            }
+            
+            // Get only selected listings
+            const selectedSales = currentSalesData.recentSales.filter((_, index) => 
+                selectedListings.has(index)
+            );
+            
+            // Recalculate metrics with only selected listings
+            const newMetrics = calculateMetrics(
+                { recentSales: selectedSales }, 
+                currentSellerPrice
+            );
+            
+            // Update display
+            updateMetricsDisplay(newMetrics, selectedSales.length);
+            
+            // Update count indicator
+            const countEl = document.getElementById('listingsCount');
+            if (countEl) {
+                countEl.textContent = `${selectedSales.length} of ${currentSalesData.recentSales.length} selected`;
+            }
+        }
+        
+        function updateMetricsDisplay(metrics, selectedCount) {
+            if (!metrics || selectedCount === 0) {
+                // Show "no selections" message
+                const metricsGrid = document.querySelector('.metrics-grid');
+                if (metricsGrid) {
+                    metricsGrid.innerHTML = `
+                        <div class="info-message">
+                            <span>⚠️</span>
+                            Please select at least one listing to calculate metrics
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            // Update metrics display
+            const icon = metrics.recommendation 
+                ? (metrics.recommendation.status === 'buy' ? '✓' : 
+                   metrics.recommendation.status === 'consider' ? '⚠' : '✗')
+                : '';
+            
+            const metricsHTML = `
+                ${metrics.hasPurchasePrice ? `
+                    <div class="recommendation-badge ${metrics.recommendation.status}">
+                        <span>${icon}</span>
+                        <span>${metrics.recommendation.message}</span>
+                    </div>` : ''}
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Average Sale Price</div>
+                        <div class="metric-value">$${metrics.average}</div>
+                        <div class="metric-detail">Based on ${selectedCount} recent sales</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">Net Proceeds (After Fees)</div>
+                        <div class="metric-value">$${metrics.netProceeds}</div>
+                        <div class="metric-detail">Fees: $${metrics.totalCosts}</div>
+                    </div>
+
+                    <div class="metric-card highlight">
+                        <div class="metric-label">Suggested Purchase Price</div>
+                        <div class="metric-value">$${metrics.suggestedPrice}</div>
+                        <div class="metric-detail">Allows ${costSettings.profitMargin}% profit margin</div>
+                    </div>
+
+                    ${metrics.hasPurchasePrice ? `
+                    <div class="metric-card">
+                        <div class="metric-label">Realistic ROI</div>
+                        <div class="metric-value ${parseFloat(metrics.roi) > 0 ? 'positive' : 'negative'}">
+                            ${metrics.roi}%
+                        </div>
+                        <div class="metric-detail">Profit: $${metrics.potentialProfit}</div>
+                    </div>` : ''}
+                </div>
+            `;
+            
+            // Find and update the metrics section
+            const resultsSection = document.getElementById('resultsSection');
+            const listingsSection = resultsSection.querySelector('.listings-section');
+            const existingMetrics = resultsSection.querySelector('.recommendation-badge, .metrics-grid')?.parentElement;
+            
+            if (existingMetrics) {
+                existingMetrics.innerHTML = metricsHTML;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
 
         // ─── Batch Mode ─────────────────────────────────────────
         let batchMode = false;
