@@ -137,6 +137,69 @@
             border-color: #60efff;
         }
 
+        .photo-option-buttons {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .half-button {
+            flex: 1;
+            min-height: 0;
+            height: auto;
+            font-size: 0.9rem;
+        }
+
+        .camera-capture-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #60efff 0%, #0061ff 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(96, 239, 255, 0.3);
+        }
+
+        .camera-capture-btn:active {
+            transform: scale(0.95);
+        }
+
+        .camera-content {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2a1f3a 100%);
+            border: 2px solid rgba(96, 239, 255, 0.3);
+            border-radius: 16px;
+            padding: 0;
+            max-width: 700px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .camera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(96, 239, 255, 0.2);
+        }
+
+        .camera-header h3 {
+            color: #60efff;
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        #cameraVideo {
+            display: block;
+            width: 100%;
+            background: #000;
+        }
+
         .photo-preview {
             position: relative;
             width: 100%;
@@ -1262,10 +1325,16 @@
                             <span class="photo-label">Front</span>
                         </div>
                     </div>
-                    <button id="frontCameraButton" class="camera-button" onclick="selectPhotoFile('front')">
-                        <span style="font-size: 2rem;">📁</span>
-                        <span>Select Front Photo</span>
-                    </button>
+                    <div id="frontCameraButton" class="photo-option-buttons">
+                        <button class="camera-button half-button" onclick="selectPhotoFile('front')">
+                            <span style="font-size: 1.5rem;">📁</span>
+                            <span>Upload</span>
+                        </button>
+                        <button class="camera-button half-button" onclick="startCamera('front')">
+                            <span style="font-size: 1.5rem;">📷</span>
+                            <span>Camera</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="photo-wrapper">
@@ -1276,16 +1345,39 @@
                             <span class="photo-label">Back</span>
                         </div>
                     </div>
-                    <button id="backCameraButton" class="camera-button" onclick="selectPhotoFile('back')">
-                        <span style="font-size: 2rem;">📁</span>
-                        <span>Select Back Photo</span>
-                    </button>
+                    <div id="backCameraButton" class="photo-option-buttons">
+                        <button class="camera-button half-button" onclick="selectPhotoFile('back')">
+                            <span style="font-size: 1.5rem;">📁</span>
+                            <span>Upload</span>
+                        </button>
+                        <button class="camera-button half-button" onclick="startCamera('back')">
+                            <span style="font-size: 1.5rem;">📷</span>
+                            <span>Camera</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- Hidden file inputs for photo upload -->
             <input type="file" id="frontFileInput" accept="image/*" style="display: none;">
             <input type="file" id="backFileInput" accept="image/*" style="display: none;">
+
+            <!-- Camera Modal -->
+            <div id="cameraModal" class="modal-overlay">
+                <div class="camera-content">
+                    <div class="camera-header">
+                        <h3 id="cameraTitle">Take Photo</h3>
+                        <button class="close-button" onclick="stopCamera()">×</button>
+                    </div>
+                    <video id="cameraVideo" autoplay playsinline style="width: 100%; max-width: 600px; border-radius: 8px;"></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <div style="display: flex; gap: 1rem; padding: 1rem; justify-content: center;">
+                        <button class="camera-capture-btn" onclick="capturePhoto()">
+                            📸 Capture
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <button id="aiAnalyzeButton" class="ai-analyze-button hidden" onclick="analyzeCard()">
                 <span>👁</span>
