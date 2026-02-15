@@ -526,6 +526,56 @@
             accent-color: #60efff;
         }
 
+        .listing-relevance-indicator {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem;
+        }
+
+        .relevance-score {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #60efff;
+            font-family: 'Courier New', monospace;
+        }
+
+        .relevance-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.15rem 0.4rem;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .relevance-badge.perfect {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.4);
+        }
+
+        .relevance-badge.excellent {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+
+        .relevance-badge.good {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+        }
+
+        .relevance-badge.partial {
+            background: rgba(156, 163, 175, 0.2);
+            color: #9ca3af;
+            border: 1px solid rgba(156, 163, 175, 0.4);
+        }
+
         .listing-image-wrap {
             flex-shrink: 0;
             width: 80px;
@@ -2101,8 +2151,98 @@
                         throw new Error('Apify returned invalid data format');
                     }
                     
+                    // ═══════════════════════════════════════════════════════════════
+                    // SMART RELEVANCE SCORING AND SORTING
+                    // ═══════════════════════════════════════════════════════════════
+                    
+                    // Calculate relevance score for each listing
+                    const scoredResults = ebayResults.map(item => {
+                        const title = (item.title || '').toLowerCase();
+                        let score = 0;
+                        let matchDetails = [];
+                        
+                        // Get card identification data
+                        const cardId = cardIdentification || {};
+                        
+                        // Priority 1: Player Name (50 points)
+                        if (cardId.player && title.includes(cardId.player.toLowerCase())) {
+                            score += 50;
+                            matchDetails.push('player');
+                        }
+                        
+                        // Priority 2: Brand (20 points)
+                        if (cardId.brand && title.includes(cardId.brand.toLowerCase())) {
+                            score += 20;
+                            matchDetails.push('brand');
+                        }
+                        
+                        // Priority 3: Set (15 points)
+                        if (cardId.set && title.includes(cardId.set.toLowerCase())) {
+                            score += 15;
+                            matchDetails.push('set');
+                        }
+                        
+                        // Priority 4: Year (10 points)
+                        if (cardId.year && title.includes(cardId.year)) {
+                            score += 10;
+                            matchDetails.push('year');
+                        }
+                        
+                        // Priority 5: Card Number (10 points)
+                        // Check for #123 or just 123
+                        if (cardId.cardNumber) {
+                            const cardNumRegex = new RegExp(`#?${cardId.cardNumber}\\b`, 'i');
+                            if (cardNumRegex.test(title)) {
+                                score += 10;
+                                matchDetails.push('card#');
+                            }
+                        }
+                        
+                        // Priority 6: Numbered Parallel (5 points - harder to match)
+                        if (cardId.numberedParallel) {
+                            // Match /25, /50, /99, etc.
+                            const numberedMatch = cardId.numberedParallel.match(/\/(\d+)$/);
+                            if (numberedMatch) {
+                                const printRun = numberedMatch[1];
+                                if (title.includes(`/${printRun}`) || title.includes(`/ ${printRun}`)) {
+                                    score += 5;
+                                    matchDetails.push('numbered');
+                                }
+                            }
+                        }
+                        
+                        // Priority 7: Parallel (3 points - very hard to match consistently)
+                        if (cardId.parallel && cardId.parallel !== 'Base') {
+                            // Extract key parallel words (e.g., "Yellow Foil" → ["yellow", "foil"])
+                            const parallelWords = cardId.parallel.toLowerCase().split(' ');
+                            const parallelMatches = parallelWords.filter(word => 
+                                word.length > 3 && title.includes(word)
+                            );
+                            if (parallelMatches.length > 0) {
+                                score += 3 * parallelMatches.length; // More parallel words = higher score
+                                matchDetails.push('parallel');
+                            }
+                        }
+                        
+                        return {
+                            ...item,
+                            relevanceScore: score,
+                            matchDetails: matchDetails
+                        };
+                    });
+                    
+                    // Sort by relevance score (highest first)
+                    const sortedResults = scoredResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
+                    
+                    console.log('Relevance scoring applied:');
+                    sortedResults.forEach((item, i) => {
+                        if (i < 5) { // Log top 5
+                            console.log(`  ${i+1}. Score ${item.relevanceScore}: ${item.title.substring(0, 60)}... [${item.matchDetails.join(', ')}]`);
+                        }
+                    });
+                    
                     // Apply exact match filter if provided
-                    let filteredResults = ebayResults;
+                    let filteredResults = sortedResults;
                     const exactMatch = document.getElementById('exactMatch').value.trim();
                     
                     if (exactMatch && ebayResults && ebayResults.length > 0) {
@@ -2545,6 +2685,14 @@
                                checked 
                                onchange="toggleListing(${index})">
                     </div>
+                    ${sale.relevanceScore !== undefined ? `
+                    <div class="listing-relevance-indicator" title="${sale.matchDetails ? 'Matches: ' + sale.matchDetails.join(', ') : 'Relevance score'}">
+                        <div class="relevance-score">${sale.relevanceScore}</div>
+                        ${sale.relevanceScore >= 90 ? '<div class="relevance-badge perfect">Perfect Match</div>' : 
+                          sale.relevanceScore >= 70 ? '<div class="relevance-badge excellent">Excellent</div>' : 
+                          sale.relevanceScore >= 50 ? '<div class="relevance-badge good">Good</div>' : 
+                          '<div class="relevance-badge partial">Partial</div>'}
+                    </div>` : ''}
                     <div class="listing-image-wrap">
                         ${displayImageUrl
                             ? `<img class="listing-image" src="${displayImageUrl}" alt="Sold listing" onerror="this.parentElement.innerHTML='<div class=&quot;listing-image-placeholder&quot;>📷</div>'">`
