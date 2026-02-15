@@ -2209,10 +2209,20 @@
                             matchDetails.push('set');
                         }
                         
-                        // Priority 4: Year (10 points)
-                        if (cardId.year && title.includes(cardId.year)) {
-                            score += 10;
-                            matchDetails.push('year');
+                        // Priority 4: Year (CRITICAL - 10 points if match, -50 if WRONG year!)
+                        if (cardId.year) {
+                            if (title.includes(cardId.year)) {
+                                score += 10;
+                                matchDetails.push('year');
+                            } else {
+                                // Check if title has a DIFFERENT year (e.g., 2017, 2018, etc.)
+                                const yearMatch = title.match(/\b(20\d{2})\b/);
+                                if (yearMatch && yearMatch[1] !== cardId.year) {
+                                    // WRONG YEAR - heavily penalize!
+                                    score -= 50;
+                                    matchDetails.push('WRONG_YEAR');
+                                }
+                            }
                         }
                         
                         // Priority 5: Card Number (10 points)
