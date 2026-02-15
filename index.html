@@ -322,6 +322,17 @@
             font-size: 0.875rem;
         }
 
+        .id-value.numbered-highlight {
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.15);
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.05em;
+        }
+
         .divider {
             display: flex;
             align-items: center;
@@ -2024,18 +2035,34 @@
                 { label: 'Brand', value: info.brand },
                 { label: 'Set', value: info.set },
                 { label: 'Card #', value: info.cardNumber },
+                { label: 'Numbered', value: info.numberedParallel, highlight: true },  // Add numbered parallel with highlight
                 { label: 'Parallel', value: info.parallel },
                 { label: 'Grade', value: info.grade }
             ];
             
             fields.forEach(field => {
-                // Show all fields, even if Unknown (user can edit them)
+                // Skip if numbered parallel is null/undefined
+                if (field.label === 'Numbered' && !field.value) {
+                    return;
+                }
+                
+                // Show all other fields, even if Unknown (user can edit them)
                 const item = document.createElement('div');
                 item.className = 'id-item';
-                item.innerHTML = `
-                    <span class="id-label">${field.label}:</span>
-                    <span class="id-value">${field.value || 'Unknown'}</span>
-                `;
+                
+                // Highlight numbered parallel with special styling
+                if (field.highlight && field.value) {
+                    item.innerHTML = `
+                        <span class="id-label">${field.label}:</span>
+                        <span class="id-value numbered-highlight">${field.value}</span>
+                    `;
+                } else {
+                    item.innerHTML = `
+                        <span class="id-label">${field.label}:</span>
+                        <span class="id-value">${field.value || 'Unknown'}</span>
+                    `;
+                }
+                
                 container.appendChild(item);
             });
             
